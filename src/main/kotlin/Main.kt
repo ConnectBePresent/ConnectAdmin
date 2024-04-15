@@ -1,3 +1,5 @@
+import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,6 +25,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebasePlatform
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.FirebaseOptions
+import dev.gitlive.firebase.app
+import dev.gitlive.firebase.auth.auth
+import dev.gitlive.firebase.database.database
+
+import dev.gitlive.firebase.initialize
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 val poppinsFont = FontFamily(
     Font(
@@ -33,10 +49,11 @@ val poppinsFont = FontFamily(
 @Composable
 fun App() {
 
+    initializeFirebase()
+
     var is_login by remember { mutableStateOf(true) }
 
     MaterialTheme {
-
         Column {
             Text(
                 modifier = Modifier.padding(16.dp),
@@ -61,6 +78,44 @@ fun App() {
     }
 }
 
+fun initializeFirebase() {
+
+    FirebasePlatform.initializeFirebasePlatform(
+        object : FirebasePlatform() {
+            val storage = mutableMapOf<String, String>()
+            override fun store(key: String, value: String) = storage.set(key, value)
+            override fun retrieve(key: String) = storage[key]
+            override fun clear(key: String) {
+                storage.remove(key)
+            }
+
+            override fun log(msg: String) = println(msg)
+        },
+    )
+
+    FirebaseApp.initializeApp(
+        Context(),
+        com.google.firebase.FirebaseOptions.Builder()
+            .setApplicationId("1:332560500716:android:77d3b6a8cff2cd332ea2c9")
+            .setProjectId("connect-7bdb2").setApiKey("AIzaSyDxC52QD8BUoZBzupueO2A3pzXf70GFxjc")
+            .setDatabaseUrl("https://connect-7bdb2-default-rtdb.firebaseio.com").build(),
+        )
+
+    /*Firebase.initialize(
+            Context(), FirebaseOptions(
+                "1:332560500716:android:77d3b6a8cff2cd332ea2c9",
+                "AIzaSyDxC52QD8BUoZBzupueO2A3pzXf70GFxjc",
+                "https://connect-7bdb2-default-rtdb.firebaseio.com",
+                null,
+                null,
+                "connect-7bdb2",
+                null,
+                null
+            ), "ConnectBePresent"
+        )*/
+}
+
+@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun SignUp(current: Boolean): Boolean {
 
@@ -87,9 +142,10 @@ fun SignUp(current: Boolean): Boolean {
         var confirmPassword by remember { mutableStateOf("") }
         var confirmPasswordVisibility: Boolean by remember { mutableStateOf(false) }
 
+        var isError: Boolean by remember { mutableStateOf(false) }
+
         OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally)
-            .padding(16.dp, 16.dp, 16.dp, 0.dp)
-            .fillMaxWidth(0.5f),
+            .padding(16.dp, 16.dp, 16.dp, 0.dp).fillMaxWidth(0.5f),
             value = username,
             onValueChange = {
                 username = it
@@ -98,8 +154,8 @@ fun SignUp(current: Boolean): Boolean {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             leadingIcon = @Composable { Icon(painterResource("person.png"), "person icon") })
 
-        OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp, 16.dp, 16.dp, 0.dp)
-            .fillMaxWidth(0.5f),
+        OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally)
+            .padding(16.dp, 16.dp, 16.dp, 0.dp).fillMaxWidth(0.5f),
             value = email,
             onValueChange = {
                 email = it
@@ -108,8 +164,8 @@ fun SignUp(current: Boolean): Boolean {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             leadingIcon = @Composable { Icon(painterResource("mail.png"), "message icon") })
 
-        OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp, 16.dp, 16.dp, 0.dp)
-            .fillMaxWidth(0.5f),
+        OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally)
+            .padding(16.dp, 16.dp, 16.dp, 0.dp).fillMaxWidth(0.5f),
             value = password,
             onValueChange = {
                 password = it
@@ -127,8 +183,8 @@ fun SignUp(current: Boolean): Boolean {
                 }
             })
 
-        OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp, 16.dp, 16.dp, 0.dp)
-            .fillMaxWidth(0.5f),
+        OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally)
+            .padding(16.dp, 16.dp, 16.dp, 0.dp).fillMaxWidth(0.5f),
             value = confirmPassword,
             onValueChange = {
                 confirmPassword = it
@@ -151,11 +207,26 @@ fun SignUp(current: Boolean): Boolean {
                 .padding(16.dp, 16.dp, 16.dp, 0.dp),
             onClick = {
 
+                if (username.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
+                    isError = true
+                    return@TextButton
+                }
+
+                isError = false
+
+                GlobalScope.launch {
+                    val result = Firebase.auth.createUserWithEmailAndPassword(email, password)
+
+                    Log.e("vishnu", "SignUp: $result")
+                }
             },
             content = {
                 Text(text = buildAnnotatedString {
-                    withStyle(SpanStyle(color = Color.White)) {
-                        append("Login")
+                    if (isError) withStyle(SpanStyle(color = Color.White)) {
+                        append("Register")
+                    }
+                    else withStyle(SpanStyle(color = Color.Red)) {
+                        append("Register")
                     }
                 }, fontFamily = poppinsFont, fontSize = 16.sp, fontWeight = FontWeight.Light)
             },
@@ -166,7 +237,8 @@ fun SignUp(current: Boolean): Boolean {
         Row(modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)) {
 
             TextButton(
-                modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp, 0.dp, 0.dp, 16.dp),
+                modifier = Modifier.align(Alignment.CenterVertically)
+                    .padding(16.dp, 0.dp, 0.dp, 16.dp),
                 onClick = {
                     is_login = true
                 },
@@ -177,30 +249,14 @@ fun SignUp(current: Boolean): Boolean {
                                 color = Color(0xFF292D32)
                             )
                         ) {
-                            append("New here?")
+                            append("Have an account?")
                         }
                         withStyle(
                             style = SpanStyle(
                                 fontWeight = FontWeight.Bold, color = Color(0xFF292D32)
                             )
                         ) {
-                            append(" Register!")
-                        }
-                    }, fontFamily = poppinsFont, fontSize = 12.sp, fontWeight = FontWeight.Light)
-                },
-            )
-
-            Spacer(Modifier.weight(1.0f))
-
-            TextButton(
-                modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp, 0.dp, 0.dp, 16.dp),
-                onClick = {
-
-                },
-                content = {
-                    Text(text = buildAnnotatedString {
-                        withStyle(SpanStyle(color = Color(0xFF292D32))) {
-                            append("Forgot Password?")
+                            append(" Login!")
                         }
                     }, fontFamily = poppinsFont, fontSize = 12.sp, fontWeight = FontWeight.Light)
                 },
@@ -231,8 +287,8 @@ fun Login(current: Boolean): Boolean {
         var password by remember { mutableStateOf("") }
         var passwordVisibility: Boolean by remember { mutableStateOf(false) }
 
-        OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp, 16.dp, 16.dp, 0.dp)
-            .fillMaxWidth(0.5f),
+        OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally)
+            .padding(16.dp, 16.dp, 16.dp, 0.dp).fillMaxWidth(0.5f),
             value = email,
             onValueChange = {
                 email = it
@@ -241,8 +297,8 @@ fun Login(current: Boolean): Boolean {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             leadingIcon = @Composable { Icon(painterResource("mail.png"), "message icon") })
 
-        OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp, 16.dp, 16.dp, 0.dp)
-            .fillMaxWidth(0.5f),
+        OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally)
+            .padding(16.dp, 16.dp, 16.dp, 0.dp).fillMaxWidth(0.5f),
             value = password,
             onValueChange = {
                 password = it
@@ -280,7 +336,8 @@ fun Login(current: Boolean): Boolean {
         Row(modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)) {
 
             TextButton(
-                modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp, 0.dp, 0.dp, 16.dp),
+                modifier = Modifier.align(Alignment.CenterVertically)
+                    .padding(16.dp, 0.dp, 0.dp, 16.dp),
                 onClick = {
                     is_login = false
                 },
@@ -307,7 +364,8 @@ fun Login(current: Boolean): Boolean {
             Spacer(Modifier.weight(1.0f))
 
             TextButton(
-                modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp, 0.dp, 0.dp, 16.dp),
+                modifier = Modifier.align(Alignment.CenterVertically)
+                    .padding(16.dp, 0.dp, 0.dp, 16.dp),
                 onClick = {
 
                 },

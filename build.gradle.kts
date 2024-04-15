@@ -3,6 +3,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     kotlin("jvm") version "1.9.23"
     id("org.jetbrains.compose") version "1.6.1"
+    id("com.google.gms.google-services") version "4.4.1" apply false
 }
 
 group = "s8.project.connect"
@@ -20,6 +21,14 @@ dependencies {
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
+
+    implementation(project.dependencies.platform("com.google.firebase:firebase-bom:29.3.1"))
+    implementation("com.google.firebase:firebase-database-ktx")
+    implementation("com.google.firebase:firebase-auth-ktx")
+
+    implementation("dev.gitlive:firebase-app:1.12.0")
+    implementation("dev.gitlive:firebase-auth:1.12.0")
+    implementation("dev.gitlive:firebase-database:1.12.0")
 }
 
 compose.desktop {
