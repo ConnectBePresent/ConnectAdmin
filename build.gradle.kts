@@ -28,6 +28,8 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     implementation("com.russhwolf:multiplatform-settings-no-arg:1.1.1")
+
+    implementation("cafe.adriel.voyager:voyager-navigator:1.0.0")
 }
 
 compose.desktop {
