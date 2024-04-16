@@ -5,6 +5,7 @@ import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Query
 import java.net.http.HttpResponse
 
 interface FirebaseAPI {
@@ -23,7 +24,12 @@ interface FirebaseAPI {
 //        @Header("password") password: String,
 //    )
 
-//    @Headers("Content-Type: application/json")
+    @PUT("/.json/")
+    suspend fun setInstitutionsList(@Body institutionList: ArrayList<Institution>)
+
     @GET("/.json/")
     suspend fun getInstitutionsList(): ArrayList<Institution>
+
+    @POST("/.json/")
+    suspend fun registerInstitute(@Body institution: Institution)
 }

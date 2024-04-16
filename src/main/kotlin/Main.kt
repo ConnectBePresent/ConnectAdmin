@@ -1,3 +1,5 @@
+@file:OptIn(DelicateCoroutinesApi::class)
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,17 +41,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.russhwolf.settings.Settings
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Callback
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.converter.scalars.ScalarsConverterFactory
 
 
 val poppinsFont = FontFamily(
@@ -58,26 +58,20 @@ val poppinsFont = FontFamily(
     )
 )
 
-val firebaseAPI: FirebaseAPI = Retrofit.Builder().baseUrl(Constants.DB_BASE_URL)
-    .client(
-        OkHttpClient.Builder().addInterceptor(
-            HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
-        ).build()
+val firebaseAPI: FirebaseAPI = Retrofit.Builder().baseUrl(Constants.DB_BASE_URL).client(
+    OkHttpClient.Builder().addInterceptor(
+        HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
+    ).build()
+).addConverterFactory(
+    GsonConverterFactory.create(
+        GsonBuilder().setLenient().serializeNulls().create()
     )
-//    .addConverterFactory(ScalarsConverterFactory.create())
-    .addConverterFactory(
-        GsonConverterFactory.create(
-            GsonBuilder()
-//                .setLenient()
-                .create()
-        )
-    )
-    .build().create(FirebaseAPI::class.java);
+).build().create(FirebaseAPI::class.java);
 
 @Composable
 fun App() {
 
-    var is_login by remember { mutableStateOf(true) }
+    var isLogin by remember { mutableStateOf(true) }
 
     MaterialTheme {
         Column {
@@ -97,8 +91,8 @@ fun App() {
                     contentDescription = "illustration"
                 )
 
-                if (is_login) is_login = Login(is_login)
-                else is_login = SignUp(is_login)
+                if (isLogin) isLogin = Login(isLogin)
+                else isLogin = SignUp(isLogin)
             }
         }
     }
@@ -107,7 +101,7 @@ fun App() {
 @Composable
 fun SignUp(current: Boolean): Boolean {
 
-    var is_login by remember { mutableStateOf(current) }
+    var isLogin by remember { mutableStateOf(current) }
 
     Column(
         Modifier.fillMaxWidth().fillMaxHeight(), verticalArrangement = Arrangement.Center
@@ -121,8 +115,7 @@ fun SignUp(current: Boolean): Boolean {
             fontWeight = FontWeight.Medium
         )
 
-        var email by remember { mutableStateOf("") }
-        var username by remember { mutableStateOf("") }
+        var instituteID by remember { mutableStateOf("") }
 
         var password by remember { mutableStateOf("") }
         var passwordVisibility: Boolean by remember { mutableStateOf(false) }
@@ -130,27 +123,15 @@ fun SignUp(current: Boolean): Boolean {
         var confirmPassword by remember { mutableStateOf("") }
         var confirmPasswordVisibility: Boolean by remember { mutableStateOf(false) }
 
-        var isError: Boolean by remember { mutableStateOf(false) }
-
         OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally)
             .padding(16.dp, 16.dp, 16.dp, 0.dp).fillMaxWidth(0.5f),
-            value = username,
+            value = instituteID,
             onValueChange = {
-                username = it
+                instituteID = it
             },
-            label = { Text("Username", fontFamily = poppinsFont) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            leadingIcon = @Composable { Icon(painterResource("person.png"), "person icon") })
-
-        OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally)
-            .padding(16.dp, 16.dp, 16.dp, 0.dp).fillMaxWidth(0.5f),
-            value = email,
-            onValueChange = {
-                email = it
-            },
-            label = { Text("E-mail", fontFamily = poppinsFont) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            leadingIcon = @Composable { Icon(painterResource("mail.png"), "message icon") })
+            label = { Text("School ID", fontFamily = poppinsFont) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            leadingIcon = @Composable { Icon(painterResource("badge.png"), "badge icon") })
 
         OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally)
             .padding(16.dp, 16.dp, 16.dp, 0.dp).fillMaxWidth(0.5f),
@@ -190,24 +171,34 @@ fun SignUp(current: Boolean): Boolean {
                 }
             })
 
-        TextButton(
-            modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
-                .padding(16.dp, 16.dp, 16.dp, 0.dp),
+        TextButton(modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
+            .padding(16.dp, 16.dp, 16.dp, 0.dp),
             onClick = {
 
-                if (username.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
-                    isError = true
+                if (instituteID.isBlank() || password.isBlank() || confirmPassword.isBlank() || password != confirmPassword) {
                     return@TextButton
                 }
 
-                isError = false
+                GlobalScope.launch {
+                    val list = firebaseAPI.getInstitutionsList()
+
+                    list.add(
+                        Institution(
+                            instituteID.trim(), password.trim()
+                        )
+                    )
+
+                    firebaseAPI.setInstitutionsList(
+                        list
+                    )
+
+                    isLogin = true
+                }
+
             },
             content = {
                 Text(text = buildAnnotatedString {
-                    if (isError) withStyle(SpanStyle(color = Color.White)) {
-                        append("Register")
-                    }
-                    else withStyle(SpanStyle(color = Color.Red)) {
+                    withStyle(SpanStyle(color = Color.White)) {
                         append("Register")
                     }
                 }, fontFamily = poppinsFont, fontSize = 16.sp, fontWeight = FontWeight.Light)
@@ -222,7 +213,7 @@ fun SignUp(current: Boolean): Boolean {
                 modifier = Modifier.align(Alignment.CenterVertically)
                     .padding(16.dp, 0.dp, 0.dp, 16.dp),
                 onClick = {
-                    is_login = true
+                    isLogin = true
                 },
                 content = {
                     Text(text = buildAnnotatedString {
@@ -245,13 +236,13 @@ fun SignUp(current: Boolean): Boolean {
             )
         }
     }
-    return is_login
+    return isLogin
 }
 
 @Composable
 fun Login(current: Boolean): Boolean {
 
-    var is_login by remember { mutableStateOf(current) }
+    var isLogin by remember { mutableStateOf(current) }
 
     Column(
         Modifier.fillMaxWidth().fillMaxHeight(), verticalArrangement = Arrangement.Center
@@ -265,19 +256,19 @@ fun Login(current: Boolean): Boolean {
             fontWeight = FontWeight.Medium
         )
 
-        var email by remember { mutableStateOf("") }
+        var instituteID by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         var passwordVisibility: Boolean by remember { mutableStateOf(false) }
 
         OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally)
             .padding(16.dp, 16.dp, 16.dp, 0.dp).fillMaxWidth(0.5f),
-            value = email,
+            value = instituteID,
             onValueChange = {
-                email = it
+                instituteID = it
             },
-            label = { Text("E-mail", fontFamily = poppinsFont) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            leadingIcon = @Composable { Icon(painterResource("mail.png"), "message icon") })
+            label = { Text("School ID", fontFamily = poppinsFont) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            leadingIcon = @Composable { Icon(painterResource("badge.png"), "message icon") })
 
         OutlinedTextField(modifier = Modifier.align(Alignment.CenterHorizontally)
             .padding(16.dp, 16.dp, 16.dp, 0.dp).fillMaxWidth(0.5f),
@@ -298,10 +289,31 @@ fun Login(current: Boolean): Boolean {
                 }
             })
 
-        TextButton(
-            modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
-                .padding(16.dp, 16.dp, 16.dp, 0.dp),
+        TextButton(modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
+            .padding(16.dp, 16.dp, 16.dp, 0.dp),
             onClick = {
+
+                if (instituteID.isBlank() || password.isBlank()) {
+                    return@TextButton
+                }
+
+                GlobalScope.launch {
+                    val list = firebaseAPI.getInstitutionsList()
+
+                    for (institution in list) {
+                        if (institution.instituteID.trim() == instituteID) {
+                            if (institution.institutePassword.trim() == password) {
+                                Settings().putString(Constants.KEY_INSTITUTE_ID, instituteID)
+                                println("Success!")
+                                return@launch
+                            } else {
+                                println("Wrong password")
+                                return@launch
+                            }
+                        }
+                    }
+                    println("No such institution")
+                }
             },
             content = {
                 Text(text = buildAnnotatedString {
@@ -320,7 +332,7 @@ fun Login(current: Boolean): Boolean {
                 modifier = Modifier.align(Alignment.CenterVertically)
                     .padding(16.dp, 0.dp, 0.dp, 16.dp),
                 onClick = {
-                    is_login = false
+                    isLogin = false
                 },
                 content = {
                     Text(text = buildAnnotatedString {
@@ -347,9 +359,7 @@ fun Login(current: Boolean): Boolean {
             TextButton(
                 modifier = Modifier.align(Alignment.CenterVertically)
                     .padding(16.dp, 0.dp, 0.dp, 16.dp),
-                onClick = {
-
-                },
+                onClick = {},
                 content = {
                     Text(text = buildAnnotatedString {
                         withStyle(SpanStyle(color = Color(0xFF292D32))) {
@@ -361,18 +371,12 @@ fun Login(current: Boolean): Boolean {
         }
     }
 
-    return is_login
+    return isLogin
 }
 
 fun main() = application {
     Window(onCloseRequest = ::exitApplication) {
-
-        GlobalScope.launch {
-            println(
-                firebaseAPI.getInstitutionsList()
-            )
-        }
-
+//        GlobalScope.launch { }
         App()
     }
 }
