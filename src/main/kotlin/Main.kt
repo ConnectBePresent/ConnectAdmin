@@ -46,8 +46,10 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Callback
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 
 
 val poppinsFont = FontFamily(
@@ -59,14 +61,16 @@ val poppinsFont = FontFamily(
 val firebaseAPI: FirebaseAPI = Retrofit.Builder().baseUrl(Constants.DB_BASE_URL)
 //    .client(
 //        OkHttpClient.Builder().addInterceptor(
-//            HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
+//            HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC)
 //        ).build()
 //    )
+    .addConverterFactory(ScalarsConverterFactory.create())
     .addConverterFactory(
         GsonConverterFactory.create(
             GsonBuilder().setLenient().create()
         )
-    ).build().create(FirebaseAPI::class.java);
+    )
+    .build().create(FirebaseAPI::class.java);
 
 @Composable
 fun App() {
@@ -297,13 +301,6 @@ fun Login(current: Boolean): Boolean {
             modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
                 .padding(16.dp, 16.dp, 16.dp, 0.dp),
             onClick = {
-
-                GlobalScope.launch {
-
-                    println(
-                        firebaseAPI.getInstitutionsList()
-                    )
-                }
             },
             content = {
                 Text(text = buildAnnotatedString {
@@ -368,6 +365,13 @@ fun Login(current: Boolean): Boolean {
 
 fun main() = application {
     Window(onCloseRequest = ::exitApplication) {
+
+        GlobalScope.launch {
+            println(
+                firebaseAPI.getInstitutionsList()
+            )
+        }
+
         App()
     }
 }

@@ -1,3 +1,4 @@
+import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -8,21 +9,21 @@ import java.net.http.HttpResponse
 
 interface FirebaseAPI {
 
-    @Headers("Content-Type: application/json")
-    @POST("/accounts:signUp")
-    suspend fun signUp(
-        @Header("email") email: String,
-        @Header("password") password: String,
-    )
+//    @Headers("Content-Type: application/json")
+//    @POST("/accounts:signUp")
+//    suspend fun signUp(
+//        @Header("email") email: String,
+//        @Header("password") password: String,
+//    )
+//
+//    @Headers("Content-Type: application/json")
+//    @POST("/accounts:signInWithPassword?")
+//    suspend fun signIn(
+//        @Header("email") email: String,
+//        @Header("password") password: String,
+//    )
 
-    @Headers("Content-Type: application/json")
-    @POST("/accounts:signInWithPassword?")
-    suspend fun signIn(
-        @Header("email") email: String,
-        @Header("password") password: String,
-    )
-
-    @Headers("Content-Type: application/json")
-    @GET("/institutions")
+//    @Headers("Content-Type: application/json")
+    @GET("/")
     suspend fun getInstitutionsList(): List<Institution>
 }
