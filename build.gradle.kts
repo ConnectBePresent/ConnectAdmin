@@ -22,13 +22,9 @@ dependencies {
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
 
-    implementation(project.dependencies.platform("com.google.firebase:firebase-bom:29.3.1"))
-    implementation("com.google.firebase:firebase-database-ktx")
-    implementation("com.google.firebase:firebase-auth-ktx")
-
-    implementation("dev.gitlive:firebase-app:1.12.0")
-    implementation("dev.gitlive:firebase-auth:1.12.0")
-    implementation("dev.gitlive:firebase-database:1.12.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 }
 
 compose.desktop {
