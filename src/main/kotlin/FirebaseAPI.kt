@@ -24,6 +24,6 @@ interface FirebaseAPI {
 //    )
 
 //    @Headers("Content-Type: application/json")
-    @GET("/")
-    suspend fun getInstitutionsList(): List<Institution>
+    @GET("/.json/")
+    suspend fun getInstitutionsList(): ArrayList<Institution>
 }

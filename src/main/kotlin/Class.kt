@@ -3,5 +3,5 @@ data class Class(
     val division: String,
     val teacherEmail: String,
     val teacherPassword: String,
-    val studentList: List<Student>
+    val studentList: ArrayList<Student>
 )

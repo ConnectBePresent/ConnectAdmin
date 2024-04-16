@@ -59,15 +59,17 @@ val poppinsFont = FontFamily(
 )
 
 val firebaseAPI: FirebaseAPI = Retrofit.Builder().baseUrl(Constants.DB_BASE_URL)
-//    .client(
-//        OkHttpClient.Builder().addInterceptor(
-//            HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC)
-//        ).build()
-//    )
-    .addConverterFactory(ScalarsConverterFactory.create())
+    .client(
+        OkHttpClient.Builder().addInterceptor(
+            HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
+        ).build()
+    )
+//    .addConverterFactory(ScalarsConverterFactory.create())
     .addConverterFactory(
         GsonConverterFactory.create(
-            GsonBuilder().setLenient().create()
+            GsonBuilder()
+//                .setLenient()
+                .create()
         )
     )
     .build().create(FirebaseAPI::class.java);
@@ -102,7 +104,6 @@ fun App() {
     }
 }
 
-@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun SignUp(current: Boolean): Boolean {
 
