@@ -18,6 +18,7 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,12 +55,16 @@ private val poppinsFont = FontFamily(
     )
 )
 
+private lateinit var isSuccess : MutableState<Boolean>
+
 class LoginScreen() : Screen {
 
     @Composable
     override fun Content() {
 
         var isLogin by remember { mutableStateOf(true) }
+
+        isSuccess = remember { mutableStateOf(false) }
 
         MaterialTheme {
             Column {
@@ -84,6 +89,8 @@ class LoginScreen() : Screen {
                 }
             }
         }
+
+        if (isSuccess.value) moveToDashBoard()
     }
 
     @Composable
@@ -283,8 +290,6 @@ class LoginScreen() : Screen {
                     }
                 })
 
-            var isSuccess by remember { mutableStateOf(false) }
-
             TextButton(
                 modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
                     .padding(16.dp, 16.dp, 16.dp, 0.dp),
@@ -310,7 +315,7 @@ class LoginScreen() : Screen {
                                         )
                                     }
 
-                                    isSuccess = true
+                                    isSuccess.value = true
 
                                     return@launch
                                 } else {
@@ -333,8 +338,6 @@ class LoginScreen() : Screen {
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF292D32)),
                 shape = RoundedCornerShape(32.dp)
             )
-
-            if (isSuccess) moveToDashBoard()
 
             Row(modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)) {
 

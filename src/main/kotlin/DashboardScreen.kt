@@ -36,7 +36,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -194,10 +193,10 @@ class DashboardScreen() : Screen {
 
             Row(Modifier.fillMaxSize()) {
                 Column(
-                    Modifier.fillMaxHeight().fillMaxWidth(0.3f).padding(16.dp)
+                    Modifier.fillMaxHeight().fillMaxWidth(0.4f).padding(16.dp)
                         .clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colors.background)
                 ) {
-                    LazyColumn {
+                    LazyColumn(Modifier.weight(1f)) {
                         items(classList) {
                             Column(modifier = Modifier.fillMaxWidth()
                                 .padding(8.dp, 8.dp, 8.dp, 0.dp).clip(RoundedCornerShape(8.dp))
@@ -227,11 +226,104 @@ class DashboardScreen() : Screen {
                             }
                         }
                     }
+
+                    Row(
+                        modifier = Modifier.wrapContentSize(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+
+                        var newClass by remember { mutableStateOf(0) }
+                        var newDivision by remember { mutableStateOf("") }
+
+                        OutlinedTextField(modifier = Modifier.padding(16.dp).weight(1f),
+                            value = newClass.toString(),
+                            onValueChange = {
+                                try {
+                                    newClass = it.trim().toInt()
+                                } catch (e: NumberFormatException) {
+                                    newClass = 0
+                                }
+                            },
+                            label = { Text("Class", fontFamily = poppinsFont) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            leadingIcon = @Composable {
+                                Icon(
+                                    painterResource("person.png"), "person icon"
+                                )
+                            })
+
+                        OutlinedTextField(modifier = Modifier.padding(16.dp).weight(1f),
+                            value = newDivision,
+                            onValueChange = {
+                                newDivision = it
+                            },
+                            label = {
+                                Text(
+                                    "Division", fontFamily = poppinsFont
+                                )
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                            leadingIcon = @Composable {
+                                Icon(
+                                    painterResource("school.png"), "name icon"
+                                )
+                            })
+
+                        TextButton(modifier = Modifier.padding(32.dp)
+                            .align(Alignment.CenterVertically).clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF292D32)).padding(8.dp).weight(1f), onClick = {
+
+                            val instituteID =
+                                Settings().getString(Constants.KEY_INSTITUTE_ID, "null")
+
+                            classList.add(
+                                Class(
+                                    newClass,
+                                    newDivision,
+                                    "$newClass$newDivision@$instituteID.com",
+                                    Utils.generatePassword()
+                                )
+                            )
+
+                            GlobalScope.launch {
+                                val institutionsList = firebaseAPI.getInstitutionsList()
+
+                                for (institution in institutionsList) {
+                                    if (instituteID == institution.instituteID) {
+                                        institution.classList = classList
+                                    }
+                                }
+
+                                Settings().putString(
+                                    Constants.KEY_CLASS_LIST, Gson().toJson(classList)
+                                )
+
+                                firebaseAPI.setInstitutionsList(
+                                    institutionsList
+                                )
+                            }
+
+                        }, content = {
+                            Text(
+                                text = buildAnnotatedString {
+                                    withStyle(SpanStyle(color = Color.White)) {
+                                        append("Add Class")
+                                    }
+                                },
+                                fontFamily = poppinsFont,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Light
+                            )
+                        }, shape = RoundedCornerShape(32.dp)
+                        )
+                    }
                 }
 
                 Column(
                     Modifier.fillMaxHeight().fillMaxWidth().padding(16.dp)
-                        .clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colors.background)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colors.background)
                 ) {
 
                     Text(
@@ -246,19 +338,19 @@ class DashboardScreen() : Screen {
 
                         if (currentStudentList.isEmpty()) {
                             Image(
-                                modifier = Modifier.fillMaxWidth(0.5f).fillMaxHeight(),
-                                contentScale = ContentScale.FillWidth,
-                                painter = painterResource("undraw_two_factor_auth.png"),
-                                contentDescription = "illustration"
+                                modifier = Modifier.fillMaxSize(0.5f)
+                                    .align(Alignment.CenterHorizontally),
+                                painter = painterResource("undraw_no_data.png"),
+                                contentDescription = "undraw_no_data"
                             )
-
                         }
 
                         LazyColumn(modifier = Modifier.weight(1f)) {
 
                             items(currentStudentList) {
                                 Column(modifier = Modifier.fillMaxWidth()
-                                    .padding(8.dp, 8.dp, 8.dp, 0.dp).clip(RoundedCornerShape(8.dp))
+                                    .padding(8.dp, 8.dp, 8.dp, 0.dp)
+                                    .clip(RoundedCornerShape(8.dp))
                                     .background(Color(0xFFB5B7C0)).clickable {
 
                                     }) {
@@ -295,8 +387,11 @@ class DashboardScreen() : Screen {
                             OutlinedTextField(modifier = Modifier.padding(16.dp),
                                 value = rollNumber.toString(),
                                 onValueChange = {
-                                    if (it.isBlank()) rollNumber = 0
-                                    else rollNumber = it.trim().toInt()
+                                    try {
+                                        rollNumber = it.trim().toInt()
+                                    } catch (e: NumberFormatException) {
+                                        rollNumber = 0
+                                    }
                                 },
                                 label = { Text("Roll Number", fontFamily = poppinsFont) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -346,7 +441,8 @@ class DashboardScreen() : Screen {
                             Spacer(Modifier.weight(1f))
 
                             TextButton(modifier = Modifier.padding(32.dp)
-                                .align(Alignment.CenterVertically).clip(RoundedCornerShape(12.dp))
+                                .align(Alignment.CenterVertically)
+                                .clip(RoundedCornerShape(12.dp))
                                 .background(Color(0xFF292D32)).padding(8.dp), onClick = {
 
 
@@ -387,7 +483,8 @@ class DashboardScreen() : Screen {
     fun ClassConfig() {
         Column(
             Modifier.fillMaxSize().padding(32.dp, 16.dp, 32.dp, 0.dp)
-                .clip(RoundedCornerShape(16.dp, 16.dp, 0.dp, 0.dp)).background(Color(0xFFB5B7C0))
+                .clip(RoundedCornerShape(16.dp, 16.dp, 0.dp, 0.dp))
+                .background(Color(0xFFB5B7C0))
         ) {
 
             Text(
@@ -500,7 +597,8 @@ class DashboardScreen() : Screen {
 
                     Spacer(Modifier.weight(1f))
 
-                    TextButton(modifier = Modifier.padding(32.dp).clip(RoundedCornerShape(12.dp))
+                    TextButton(modifier = Modifier.padding(32.dp)
+                        .clip(RoundedCornerShape(12.dp))
                         .background(Color(0xFF292D32)).padding(8.dp), onClick = {
 
                         GlobalScope.launch {
