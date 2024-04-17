@@ -46,6 +46,7 @@ import com.google.gson.Gson
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.Serial
 
@@ -166,16 +167,24 @@ class LoginScreen() : Screen {
                     }
                 })
 
+            var buttonText by remember { mutableStateOf("Register") }
+
             TextButton(
                 modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
                     .padding(16.dp, 16.dp, 16.dp, 0.dp),
                 onClick = {
 
-                    if (instituteID.isBlank() || password.isBlank() || confirmPassword.isBlank() || password != confirmPassword) {
-                        return@TextButton
-                    }
-
                     GlobalScope.launch {
+
+                        if (instituteID.isBlank() || password.isBlank() || confirmPassword.isBlank() || password != confirmPassword) {
+
+                            buttonText = "Fields Empty!!"
+                            delay(1000)
+                            buttonText = "Login"
+
+                            return@launch
+                        }
+
                         val list = firebaseAPI.getInstitutionsList()
 
                         list.add(
@@ -188,6 +197,9 @@ class LoginScreen() : Screen {
                             list
                         )
 
+                        buttonText = "Success!! Please Login!"
+                        delay(1000)
+
                         isLogin = true
                     }
 
@@ -195,7 +207,7 @@ class LoginScreen() : Screen {
                 content = {
                     Text(text = buildAnnotatedString {
                         withStyle(SpanStyle(color = Color.White)) {
-                            append("Register")
+                            append(buttonText)
                         }
                     }, fontFamily = poppinsFont, fontSize = 16.sp, fontWeight = FontWeight.Light)
                 },
@@ -290,22 +302,31 @@ class LoginScreen() : Screen {
                     }
                 })
 
+            var buttonText by remember { mutableStateOf("Login") }
+
             TextButton(
                 modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
                     .padding(16.dp, 16.dp, 16.dp, 0.dp),
                 onClick = {
 
-                    if (instituteID.isBlank() || password.isBlank()) {
-                        return@TextButton
-                    }
-
                     GlobalScope.launch {
+
+                        if (instituteID.isBlank() || password.isBlank()) {
+
+                            buttonText = "Fields Empty!!"
+                            delay(1000)
+                            buttonText = "Login"
+
+                            return@launch
+                        }
+
                         val list = firebaseAPI.getInstitutionsList()
                         for (institution in list) {
                             if (institution.instituteID.trim() == instituteID) {
                                 if (institution.institutePassword.trim() == password) {
+                                    buttonText = "Success!"
+
                                     Settings().putString(Constants.KEY_INSTITUTE_ID, instituteID)
-                                    println("Success!")
 
                                     if (institution.classList != null) {
                                         Settings().putString(
@@ -318,19 +339,23 @@ class LoginScreen() : Screen {
 
                                     return@launch
                                 } else {
-                                    println("Wrong password")
+                                    buttonText = "Wrong password"
+                                    delay(1000)
+                                    buttonText = "Login"
                                     return@launch
                                 }
                             }
                         }
 
-                        println("No such institution")
+                        buttonText = "No such institution"
+                        delay(1000)
+                        buttonText = "Login"
                     }
                 },
                 content = {
                     Text(text = buildAnnotatedString {
                         withStyle(SpanStyle(color = Color.White)) {
-                            append("Login")
+                            append(buttonText)
                         }
                     }, fontFamily = poppinsFont, fontSize = 16.sp, fontWeight = FontWeight.Light)
                 },
