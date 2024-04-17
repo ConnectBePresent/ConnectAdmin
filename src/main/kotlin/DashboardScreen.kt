@@ -30,6 +30,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -116,21 +117,69 @@ class DashboardScreen() : Screen {
             val typeToken = object : TypeToken<ArrayList<Class>>() {}
             val classList: ArrayList<Class> = Gson().fromJson(data, typeToken.type)
 
-            Text(
-                modifier = Modifier.align(Alignment.Start).padding(16.dp).fillMaxWidth(0.5f)
-                    .padding(16.dp, 8.dp, 16.dp, 0.dp),
-                text = "Class List",
-                fontFamily = poppinsFont,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Medium,
-                letterSpacing = 2.sp
-            )
+            Row {
 
+                Text(
+                    modifier = Modifier
+                        .padding(16.dp).fillMaxWidth(0.5f)
+                        .padding(16.dp, 8.dp, 16.dp, 0.dp),
+                    text = "Class List",
+                    fontFamily = poppinsFont,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Medium,
+                    letterSpacing = 2.sp
+                )
+
+                Spacer(Modifier.weight(1f))
+
+                TextButton(modifier = Modifier.padding(32.dp)
+                    .align(Alignment.CenterVertically)
+                    .clip(RoundedCornerShape(12.dp)).background(Color(0xFF292D32))
+                    .padding(8.dp), onClick = {
+
+                    GlobalScope.launch {
+
+                        val instituteID =
+                            Settings().getString(
+                                Constants.KEY_INSTITUTE_ID,
+                                "null"
+                            )
+
+                        val institutionsList = firebaseAPI.getInstitutionsList()
+
+                        for (institution in institutionsList) {
+                            if (instituteID == institution.instituteID) {
+                                institution.classList = classList
+                            }
+                        }
+
+                        firebaseAPI.setInstitutionsList(
+                            institutionsList
+                        )
+                    }
+
+                }, content = {
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(SpanStyle(color = Color.White)) {
+                                append("Submit")
+                            }
+                        },
+                        fontFamily = poppinsFont,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Light
+                    )
+                }, shape = RoundedCornerShape(32.dp)
+                )
+
+            }
             var selectedClass by remember {
                 mutableStateOf(
                     classList.get(0)
                 )
             }
+
+            var currentStudentList = remember { mutableStateListOf<Student>() }
 
             Row(Modifier.fillMaxSize()) {
                 Column(
@@ -143,11 +192,13 @@ class DashboardScreen() : Screen {
                                 .padding(8.dp, 8.dp, 8.dp, 0.dp).clip(RoundedCornerShape(8.dp))
                                 .background(Color(0xFFB5B7C0)).clickable {
                                     selectedClass = it
+
+                                    currentStudentList.clear()
+                                    currentStudentList.addAll(selectedClass.studentList!!.toMutableStateList())
                                 }) {
                                 Text(
                                     "${it.standard}${it.division}",
                                     modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp),
-//                                        color = MaterialTheme.colorScheme.onBackground,
                                     style = MaterialTheme.typography.body1,
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 2.sp
@@ -157,7 +208,6 @@ class DashboardScreen() : Screen {
                                     text = it.teacherEmail,
                                     modifier = Modifier.padding(all = 8.dp),
                                     letterSpacing = 4.sp,
-//                                        color = MaterialTheme.colors.,
                                     style = MaterialTheme.typography.caption,
                                 )
                             }
@@ -170,147 +220,139 @@ class DashboardScreen() : Screen {
                         .clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colors.background)
                 ) {
 
-                    if (selectedClass.studentList == null || selectedClass.studentList!!.size == 0) {
+                    Text(
+                        modifier = Modifier.padding(16.dp),
+                        text = "${selectedClass.standard} ${selectedClass.division}",
+                        fontFamily = poppinsFont,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
 
-                        Text(
-                            modifier = Modifier.padding(16.dp),
-                            text = "${selectedClass.standard} ${selectedClass.division}",
-                            fontFamily = poppinsFont,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                    Column {
+                        LazyColumn(modifier = Modifier.weight(1f)) {
 
-                        val studentList = remember { mutableStateListOf<Student>() }
+                            items(currentStudentList) {
+                                Column(modifier = Modifier.fillMaxWidth()
+                                    .padding(8.dp, 8.dp, 8.dp, 0.dp).clip(RoundedCornerShape(8.dp))
+                                    .background(Color(0xFFB5B7C0)).clickable {
 
-                        Column {
-                            LazyColumn(modifier = Modifier.weight(1f)) {
+                                    }) {
+                                    Text(
+                                        "${it.rollNumber} | ${it.name}",
+                                        modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp),
+                                        style = MaterialTheme.typography.body1,
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 2.sp
+                                    )
 
-                                items(studentList) {
-                                    Column(modifier = Modifier.fillMaxWidth()
-                                        .padding(8.dp, 8.dp, 8.dp, 0.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(Color(0xFFB5B7C0)).clickable {
-
-                                        }) {
-                                        Text(
-                                            "${it.rollNumber} | ${it.name}",
-                                            modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp),
-                                            style = MaterialTheme.typography.body1,
-                                            fontWeight = FontWeight.Bold,
-                                            letterSpacing = 2.sp
-                                        )
-
-                                        Text(
-                                            text = it.parentPhoneNumber,
-                                            modifier = Modifier.padding(all = 8.dp),
-                                            letterSpacing = 4.sp,
-                                            style = MaterialTheme.typography.caption,
-                                        )
-                                    }
+                                    Text(
+                                        text = it.parentPhoneNumber,
+                                        modifier = Modifier.padding(all = 8.dp),
+                                        letterSpacing = 4.sp,
+                                        style = MaterialTheme.typography.caption,
+                                    )
                                 }
                             }
+                        }
 
-                            Row(
-                                modifier = Modifier.wrapContentSize(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
+                        Row(
+                            modifier = Modifier.wrapContentSize(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
 
-                                var rollNumber by remember { mutableStateOf(0) }
-                                var name by remember { mutableStateOf("") }
-                                var phoneNumber by remember { mutableStateOf("") }
+                            var rollNumber by remember { mutableStateOf(0) }
+                            var name by remember { mutableStateOf("") }
+                            var phoneNumber by remember { mutableStateOf("") }
 
-                                Spacer(Modifier.weight(1f))
+                            Spacer(Modifier.weight(1f))
 
-                                OutlinedTextField(
-                                    modifier = Modifier.padding(16.dp),
-                                    value = rollNumber.toString(),
-                                    onValueChange = {
-                                        if (it.isBlank())
-                                            rollNumber = 0
-                                        else
-                                            rollNumber = it.toInt()
-                                    },
-                                    label = { Text("Roll Number", fontFamily = poppinsFont) },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    leadingIcon = @Composable {
-                                        Icon(
-                                            painterResource("person.png"), "person icon"
-                                        )
-                                    }
-                                )
-
-                                Spacer(Modifier.weight(1f))
-
-                                OutlinedTextField(
-                                    modifier = Modifier.padding(16.dp),
-                                    value = name,
-                                    onValueChange = {
-                                        name = it
-                                    },
-                                    label = {
-                                        Text(
-                                            "Student Name",
-                                            fontFamily = poppinsFont
-                                        )
-                                    },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                                    leadingIcon = @Composable {
-                                        Icon(
-                                            painterResource("name.png"), "name icon"
-                                        )
-                                    }
-                                )
-
-                                Spacer(Modifier.weight(1f))
-
-                                OutlinedTextField(
-                                    modifier = Modifier.padding(16.dp),
-                                    value = phoneNumber,
-                                    onValueChange = {
-                                        phoneNumber = it
-                                    },
-                                    label = {
-                                        Text(
-                                            "Parent Phone Number",
-                                            fontFamily = poppinsFont
-                                        )
-                                    },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    leadingIcon = @Composable {
-                                        Icon(
-                                            painterResource("phone.png"), "phone icon"
-                                        )
-                                    }
-                                )
-                                Spacer(Modifier.weight(1f))
-
-                                TextButton(modifier = Modifier.padding(32.dp)
-                                    .align(Alignment.CenterVertically)
-                                    .clip(RoundedCornerShape(12.dp)).background(Color(0xFF292D32))
-                                    .padding(8.dp), onClick = {
-
-                                    studentList.add(
-                                        Student(rollNumber, name, phoneNumber)
+                            OutlinedTextField(modifier = Modifier.padding(16.dp),
+                                value = rollNumber.toString(),
+                                onValueChange = {
+                                    if (it.isBlank()) rollNumber = 0
+                                    else rollNumber = it.trim().toInt()
+                                },
+                                label = { Text("Roll Number", fontFamily = poppinsFont) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                leadingIcon = @Composable {
+                                    Icon(
+                                        painterResource("person.png"), "person icon"
                                     )
+                                })
 
-                                }, content = {
+                            Spacer(Modifier.weight(1f))
+
+                            OutlinedTextField(modifier = Modifier.padding(16.dp),
+                                value = name,
+                                onValueChange = {
+                                    name = it
+                                },
+                                label = {
                                     Text(
-                                        text = buildAnnotatedString {
-                                            withStyle(SpanStyle(color = Color.White)) {
-                                                append("Add Student")
-                                            }
-                                        },
-                                        fontFamily = poppinsFont,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Light
+                                        "Student Name", fontFamily = poppinsFont
                                     )
-                                }, shape = RoundedCornerShape(32.dp)
+                                },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                                leadingIcon = @Composable {
+                                    Icon(
+                                        painterResource("name.png"), "name icon"
+                                    )
+                                })
+
+                            Spacer(Modifier.weight(1f))
+
+                            OutlinedTextField(modifier = Modifier.padding(16.dp),
+                                value = phoneNumber,
+                                onValueChange = {
+                                    phoneNumber = it
+                                },
+                                label = {
+                                    Text(
+                                        "Parent Phone Number", fontFamily = poppinsFont
+                                    )
+                                },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                leadingIcon = @Composable {
+                                    Icon(
+                                        painterResource("phone.png"), "phone icon"
+                                    )
+                                })
+                            Spacer(Modifier.weight(1f))
+
+                            TextButton(modifier = Modifier.padding(32.dp)
+                                .align(Alignment.CenterVertically).clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFF292D32)).padding(8.dp), onClick = {
+
+
+                                val student = Student(rollNumber, name, phoneNumber)
+
+                                selectedClass.studentList?.add(student)
+
+                                classList.remove(selectedClass)
+                                classList.add(selectedClass)
+
+                                Settings().putString(
+                                    Constants.KEY_CLASS_LIST, Gson().toJson(classList)
                                 )
-                            }
+
+                                currentStudentList.add(student) // just to update the visible list
+
+                            }, content = {
+                                Text(
+                                    text = buildAnnotatedString {
+                                        withStyle(SpanStyle(color = Color.White)) {
+                                            append("Add Student")
+                                        }
+                                    },
+                                    fontFamily = poppinsFont,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Light
+                                )
+                            }, shape = RoundedCornerShape(32.dp)
+                            )
                         }
                     }
-
                 }
             }
         }
@@ -522,3 +564,36 @@ class DashboardScreen() : Screen {
         private const val serialVersionUID: Long = -6432837658175213004L
     }
 }
+
+/*
+selectedClass.studentList = ArrayList(studentList.toList())
+
+                                    GlobalScope.launch {
+
+                                        val instituteID =
+                                            Settings().getString(
+                                                Constants.KEY_INSTITUTE_ID,
+                                                "null"
+                                            )
+
+                                        val institutionsList = firebaseAPI.getInstitutionsList()
+
+                                        for (institution in institutionsList) {
+                                            if (instituteID == institution.instituteID) {
+
+                                                println(
+                                                    institution.classList?.contains(
+                                                        selectedClass
+                                                    )
+                                                )
+
+                                                institution.classList?.remove(selectedClass)
+                                                institution.classList?.add(selectedClass)
+                                            }
+                                        }
+
+                                        firebaseAPI.setInstitutionsList(
+                                            institutionsList
+                                        )
+                                    }
+*/
