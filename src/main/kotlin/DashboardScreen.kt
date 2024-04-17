@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -25,6 +26,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -178,27 +180,135 @@ class DashboardScreen() : Screen {
                             fontWeight = FontWeight.Bold
                         )
 
-                        Spacer(Modifier.weight(1f))
+                        val studentList = remember { mutableStateListOf<Student>() }
 
-                        TextButton(modifier = Modifier.padding(32.dp)
-                            .align(Alignment.CenterHorizontally)
-                            .clip(RoundedCornerShape(12.dp)).background(Color(0xFF292D32))
-                            .padding(8.dp), onClick = {
+                        Column {
+                            LazyColumn(modifier = Modifier.weight(1f)) {
 
-                        }, content = {
-                            Text(
-                                text = buildAnnotatedString {
-                                    withStyle(SpanStyle(color = Color.White)) {
-                                        append("Add Student")
+                                items(studentList) {
+                                    Column(modifier = Modifier.fillMaxWidth()
+                                        .padding(8.dp, 8.dp, 8.dp, 0.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFFB5B7C0)).clickable {
+
+                                        }) {
+                                        Text(
+                                            "${it.rollNumber} | ${it.name}",
+                                            modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp),
+                                            style = MaterialTheme.typography.body1,
+                                            fontWeight = FontWeight.Bold,
+                                            letterSpacing = 2.sp
+                                        )
+
+                                        Text(
+                                            text = it.parentPhoneNumber,
+                                            modifier = Modifier.padding(all = 8.dp),
+                                            letterSpacing = 4.sp,
+                                            style = MaterialTheme.typography.caption,
+                                        )
                                     }
-                                },
-                                fontFamily = poppinsFont,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Light
-                            )
-                        }, shape = RoundedCornerShape(32.dp)
-                        )
+                                }
+                            }
 
+                            Row(
+                                modifier = Modifier.wrapContentSize(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+
+                                var rollNumber by remember { mutableStateOf(0) }
+                                var name by remember { mutableStateOf("") }
+                                var phoneNumber by remember { mutableStateOf("") }
+
+                                Spacer(Modifier.weight(1f))
+
+                                OutlinedTextField(
+                                    modifier = Modifier.padding(16.dp),
+                                    value = rollNumber.toString(),
+                                    onValueChange = {
+                                        if (it.isBlank())
+                                            rollNumber = 0
+                                        else
+                                            rollNumber = it.toInt()
+                                    },
+                                    label = { Text("Roll Number", fontFamily = poppinsFont) },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    leadingIcon = @Composable {
+                                        Icon(
+                                            painterResource("person.png"), "person icon"
+                                        )
+                                    }
+                                )
+
+                                Spacer(Modifier.weight(1f))
+
+                                OutlinedTextField(
+                                    modifier = Modifier.padding(16.dp),
+                                    value = name,
+                                    onValueChange = {
+                                        name = it
+                                    },
+                                    label = {
+                                        Text(
+                                            "Student Name",
+                                            fontFamily = poppinsFont
+                                        )
+                                    },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                                    leadingIcon = @Composable {
+                                        Icon(
+                                            painterResource("name.png"), "name icon"
+                                        )
+                                    }
+                                )
+
+                                Spacer(Modifier.weight(1f))
+
+                                OutlinedTextField(
+                                    modifier = Modifier.padding(16.dp),
+                                    value = phoneNumber,
+                                    onValueChange = {
+                                        phoneNumber = it
+                                    },
+                                    label = {
+                                        Text(
+                                            "Parent Phone Number",
+                                            fontFamily = poppinsFont
+                                        )
+                                    },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    leadingIcon = @Composable {
+                                        Icon(
+                                            painterResource("phone.png"), "phone icon"
+                                        )
+                                    }
+                                )
+                                Spacer(Modifier.weight(1f))
+
+                                TextButton(modifier = Modifier.padding(32.dp)
+                                    .align(Alignment.CenterVertically)
+                                    .clip(RoundedCornerShape(12.dp)).background(Color(0xFF292D32))
+                                    .padding(8.dp), onClick = {
+
+                                    studentList.add(
+                                        Student(rollNumber, name, phoneNumber)
+                                    )
+
+                                }, content = {
+                                    Text(
+                                        text = buildAnnotatedString {
+                                            withStyle(SpanStyle(color = Color.White)) {
+                                                append("Add Student")
+                                            }
+                                        },
+                                        fontFamily = poppinsFont,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Light
+                                    )
+                                }, shape = RoundedCornerShape(32.dp)
+                                )
+                            }
+                        }
                     }
 
                 }

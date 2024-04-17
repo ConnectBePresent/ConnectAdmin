@@ -30,6 +30,9 @@ dependencies {
     implementation("com.russhwolf:multiplatform-settings-no-arg:1.1.1")
 
     implementation("cafe.adriel.voyager:voyager-navigator:1.0.0")
+
+//    implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.9.3")
+//    implementation("com.darkrockstudios:mpfilepicker:3.1.0")
 }
 
 compose.desktop {
