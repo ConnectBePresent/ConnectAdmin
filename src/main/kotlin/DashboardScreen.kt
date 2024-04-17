@@ -98,12 +98,13 @@ class DashboardScreen() : Screen {
                                 settings.remove(Constants.KEY_CLASS_LIST)
                             },
                         painter = painterResource("logout.png"),
-                        contentDescription = "profile"
+                        contentDescription = "logout"
                     )
                 }
 
                 if (currentScreen.value == Constants.DASH_CLASS_CONFIG) ClassConfig()
                 else if (currentScreen.value == Constants.DASH_CLASS_LIST) ClassList()
+
             }
         }
     }
