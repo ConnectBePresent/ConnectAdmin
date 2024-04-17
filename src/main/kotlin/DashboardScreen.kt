@@ -26,6 +26,7 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -63,16 +64,18 @@ private val poppinsFont = FontFamily(
     )
 )
 
+private lateinit var currentScreen: MutableState<String>
+
 class DashboardScreen() : Screen {
     @Composable
     override fun Content() {
 
         val settings = Settings()
 
-        var currentScreen by remember { mutableStateOf(Constants.DASH_CLASS_CONFIG) }
+        currentScreen = remember { mutableStateOf(Constants.DASH_CLASS_CONFIG) }
 
-        if (settings.getString(Constants.KEY_CLASS_LIST, "null") != "null") currentScreen =
-            Constants.DASH_CLASS_LIST
+        if (settings.getString(Constants.KEY_CLASS_LIST, "null") != "null")
+            currentScreen.value = Constants.DASH_CLASS_LIST
 
         MaterialTheme {
             Column(Modifier.fillMaxSize()) {
@@ -94,13 +97,13 @@ class DashboardScreen() : Screen {
                                 settings.remove(Constants.KEY_INSTITUTE_ID)
                                 settings.remove(Constants.KEY_CLASS_LIST)
                             },
-                        painter = painterResource("account.png"),
+                        painter = painterResource("logout.png"),
                         contentDescription = "profile"
                     )
                 }
 
-                if (currentScreen == Constants.DASH_CLASS_CONFIG) ClassConfig()
-                else if (currentScreen == Constants.DASH_CLASS_LIST) ClassList()
+                if (currentScreen.value == Constants.DASH_CLASS_CONFIG) ClassConfig()
+                else if (currentScreen.value == Constants.DASH_CLASS_LIST) ClassList()
             }
         }
     }
@@ -122,8 +125,7 @@ class DashboardScreen() : Screen {
             Row {
 
                 Text(
-                    modifier = Modifier
-                        .padding(16.dp).fillMaxWidth(0.5f)
+                    modifier = Modifier.padding(16.dp).fillMaxWidth(0.5f)
                         .padding(16.dp, 8.dp, 16.dp, 0.dp),
                     text = "Class List",
                     fontFamily = poppinsFont,
@@ -136,50 +138,51 @@ class DashboardScreen() : Screen {
 
                 var buttonText by remember { mutableStateOf("Submit") }
 
-                TextButton(modifier = Modifier.padding(32.dp)
-                    .align(Alignment.CenterVertically)
-                    .clip(RoundedCornerShape(12.dp)).background(Color(0xFF292D32))
-                    .padding(8.dp), onClick = {
+                TextButton(
+                    modifier = Modifier.padding(32.dp).align(Alignment.CenterVertically)
+                        .clip(RoundedCornerShape(12.dp)).background(Color(0xFF292D32))
+                        .padding(8.dp),
+                    onClick = {
 
-                    GlobalScope.launch {
+                        GlobalScope.launch {
 
-                        buttonText = "Updating..."
+                            buttonText = "Updating..."
 
-                        val instituteID =
-                            Settings().getString(
-                                Constants.KEY_INSTITUTE_ID,
-                                "null"
+                            val instituteID = Settings().getString(
+                                Constants.KEY_INSTITUTE_ID, "null"
                             )
 
-                        val institutionsList = firebaseAPI.getInstitutionsList()
+                            val institutionsList = firebaseAPI.getInstitutionsList()
 
-                        for (institution in institutionsList) {
-                            if (instituteID == institution.instituteID) {
-                                institution.classList = classList
+                            for (institution in institutionsList) {
+                                if (instituteID == institution.instituteID) {
+                                    institution.classList = classList
+                                }
                             }
+
+                            firebaseAPI.setInstitutionsList(
+                                institutionsList
+                            )
+
+                            buttonText = "Done!"
+                            delay(2000)
+                            buttonText = "Submit"
                         }
 
-                        firebaseAPI.setInstitutionsList(
-                            institutionsList
+                    },
+                    content = {
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(SpanStyle(color = Color.White)) {
+                                    append(buttonText)
+                                }
+                            },
+                            fontFamily = poppinsFont,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Light
                         )
-
-                        buttonText = "Done!"
-                        delay(2000)
-                        buttonText = "Submit"
-                    }
-
-                }, content = {
-                    Text(
-                        text = buildAnnotatedString {
-                            withStyle(SpanStyle(color = Color.White)) {
-                                append(buttonText)
-                            }
-                        },
-                        fontFamily = poppinsFont,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Light
-                    )
-                }, shape = RoundedCornerShape(32.dp)
+                    },
+                    shape = RoundedCornerShape(32.dp)
                 )
 
             }
@@ -203,8 +206,8 @@ class DashboardScreen() : Screen {
                                 .background(Color(0xFFB5B7C0)).clickable {
                                     selectedClass = it
 
-                                    if (selectedClass.studentList == null)
-                                        selectedClass.studentList = ArrayList()
+                                    if (selectedClass.studentList == null) selectedClass.studentList =
+                                        ArrayList()
 
                                     currentStudentList.clear()
                                     currentStudentList.addAll(selectedClass.studentList!!.toMutableStateList())
@@ -322,8 +325,7 @@ class DashboardScreen() : Screen {
 
                 Column(
                     Modifier.fillMaxHeight().fillMaxWidth().padding(16.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colors.background)
+                        .clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colors.background)
                 ) {
 
                     Text(
@@ -348,26 +350,36 @@ class DashboardScreen() : Screen {
                         LazyColumn(modifier = Modifier.weight(1f)) {
 
                             items(currentStudentList) {
-                                Column(modifier = Modifier.fillMaxWidth()
-                                    .padding(8.dp, 8.dp, 8.dp, 0.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFFB5B7C0)).clickable {
 
-                                    }) {
-                                    Text(
-                                        "${it.rollNumber} | ${it.name}",
-                                        modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp),
-                                        style = MaterialTheme.typography.body1,
-                                        fontWeight = FontWeight.Bold,
-                                        letterSpacing = 2.sp
-                                    )
+                                Row {
+                                    Column(modifier = Modifier.weight(1f)
+                                        .padding(8.dp, 8.dp, 8.dp, 0.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFFB5B7C0)).clickable {
 
-                                    Text(
-                                        text = it.parentPhoneNumber,
-                                        modifier = Modifier.padding(all = 8.dp),
-                                        letterSpacing = 4.sp,
-                                        style = MaterialTheme.typography.caption,
-                                    )
+                                        }) {
+                                        Text(
+                                            "${it.rollNumber} | ${it.name}",
+                                            modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp),
+                                            style = MaterialTheme.typography.body1,
+                                            fontWeight = FontWeight.Bold,
+                                            letterSpacing = 2.sp
+                                        )
+
+                                        Text(
+                                            text = it.parentPhoneNumber,
+                                            modifier = Modifier.padding(all = 8.dp),
+                                            letterSpacing = 4.sp,
+                                            style = MaterialTheme.typography.caption,
+                                        )
+                                    }
+
+//                                    Spacer(Modifier.weight(1f))
+//                                    Icon(
+//                                        modifier = Modifier.weight(1f),
+//                                        painter = painterResource("delete.png"),
+//                                        contentDescription = "person icon"
+//                                    )
                                 }
                             }
                         }
@@ -441,8 +453,7 @@ class DashboardScreen() : Screen {
                             Spacer(Modifier.weight(1f))
 
                             TextButton(modifier = Modifier.padding(32.dp)
-                                .align(Alignment.CenterVertically)
-                                .clip(RoundedCornerShape(12.dp))
+                                .align(Alignment.CenterVertically).clip(RoundedCornerShape(12.dp))
                                 .background(Color(0xFF292D32)).padding(8.dp), onClick = {
 
 
@@ -483,8 +494,7 @@ class DashboardScreen() : Screen {
     fun ClassConfig() {
         Column(
             Modifier.fillMaxSize().padding(32.dp, 16.dp, 32.dp, 0.dp)
-                .clip(RoundedCornerShape(16.dp, 16.dp, 0.dp, 0.dp))
-                .background(Color(0xFFB5B7C0))
+                .clip(RoundedCornerShape(16.dp, 16.dp, 0.dp, 0.dp)).background(Color(0xFFB5B7C0))
         ) {
 
             Text(
@@ -597,9 +607,12 @@ class DashboardScreen() : Screen {
 
                     Spacer(Modifier.weight(1f))
 
-                    TextButton(modifier = Modifier.padding(32.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                    var buttonText by remember { mutableStateOf("Submit") }
+
+                    TextButton(modifier = Modifier.padding(32.dp).clip(RoundedCornerShape(12.dp))
                         .background(Color(0xFF292D32)).padding(8.dp), onClick = {
+
+                        buttonText = "Processing..."
 
                         GlobalScope.launch {
                             val classList = ArrayList<Class>()
@@ -632,13 +645,17 @@ class DashboardScreen() : Screen {
                             firebaseAPI.setInstitutionsList(
                                 institutionsList
                             )
+
+                            buttonText = "Done!"
+
+                            currentScreen.value = Constants.DASH_CLASS_LIST
                         }
 
                     }, content = {
                         Text(
                             text = buildAnnotatedString {
                                 withStyle(SpanStyle(color = Color.White)) {
-                                    append("Submit")
+                                    append(buttonText)
                                 }
                             },
                             fontFamily = poppinsFont,
@@ -687,36 +704,3 @@ class DashboardScreen() : Screen {
         private const val serialVersionUID: Long = -6432837658175213004L
     }
 }
-
-/*
-selectedClass.studentList = ArrayList(studentList.toList())
-
-                                    GlobalScope.launch {
-
-                                        val instituteID =
-                                            Settings().getString(
-                                                Constants.KEY_INSTITUTE_ID,
-                                                "null"
-                                            )
-
-                                        val institutionsList = firebaseAPI.getInstitutionsList()
-
-                                        for (institution in institutionsList) {
-                                            if (instituteID == institution.instituteID) {
-
-                                                println(
-                                                    institution.classList?.contains(
-                                                        selectedClass
-                                                    )
-                                                )
-
-                                                institution.classList?.remove(selectedClass)
-                                                institution.classList?.add(selectedClass)
-                                            }
-                                        }
-
-                                        firebaseAPI.setInstitutionsList(
-                                            institutionsList
-                                        )
-                                    }
-*/

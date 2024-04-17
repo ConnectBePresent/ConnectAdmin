@@ -55,7 +55,7 @@ private val poppinsFont = FontFamily(
     )
 )
 
-private lateinit var isSuccess : MutableState<Boolean>
+private lateinit var isSuccess: MutableState<Boolean>
 
 class LoginScreen() : Screen {
 
@@ -301,7 +301,6 @@ class LoginScreen() : Screen {
 
                     GlobalScope.launch {
                         val list = firebaseAPI.getInstitutionsList()
-
                         for (institution in list) {
                             if (institution.instituteID.trim() == instituteID) {
                                 if (institution.institutePassword.trim() == password) {
