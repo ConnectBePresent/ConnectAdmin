@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
+import com.google.gson.Gson
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -158,8 +159,9 @@ class LoginScreen() : Screen {
                     }
                 })
 
-            TextButton(modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
-                .padding(16.dp, 16.dp, 16.dp, 0.dp),
+            TextButton(
+                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
+                    .padding(16.dp, 16.dp, 16.dp, 0.dp),
                 onClick = {
 
                     if (instituteID.isBlank() || password.isBlank() || confirmPassword.isBlank() || password != confirmPassword) {
@@ -283,8 +285,9 @@ class LoginScreen() : Screen {
 
             var isSuccess by remember { mutableStateOf(false) }
 
-            TextButton(modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
-                .padding(16.dp, 16.dp, 16.dp, 0.dp),
+            TextButton(
+                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
+                    .padding(16.dp, 16.dp, 16.dp, 0.dp),
                 onClick = {
 
                     if (instituteID.isBlank() || password.isBlank()) {
@@ -299,6 +302,13 @@ class LoginScreen() : Screen {
                                 if (institution.institutePassword.trim() == password) {
                                     Settings().putString(Constants.KEY_INSTITUTE_ID, instituteID)
                                     println("Success!")
+
+                                    if (institution.classList != null) {
+                                        Settings().putString(
+                                            Constants.KEY_CLASS_LIST,
+                                            Gson().toJson(institution.classList)
+                                        )
+                                    }
 
                                     isSuccess = true
 

@@ -1,5 +1,6 @@
 @file:OptIn(DelicateCoroutinesApi::class)
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -52,6 +54,7 @@ import com.google.gson.reflect.TypeToken
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.Serial
 
@@ -132,12 +135,16 @@ class DashboardScreen() : Screen {
 
                 Spacer(Modifier.weight(1f))
 
+                var buttonText by remember { mutableStateOf("Submit") }
+
                 TextButton(modifier = Modifier.padding(32.dp)
                     .align(Alignment.CenterVertically)
                     .clip(RoundedCornerShape(12.dp)).background(Color(0xFF292D32))
                     .padding(8.dp), onClick = {
 
                     GlobalScope.launch {
+
+                        buttonText = "Updating..."
 
                         val instituteID =
                             Settings().getString(
@@ -156,13 +163,17 @@ class DashboardScreen() : Screen {
                         firebaseAPI.setInstitutionsList(
                             institutionsList
                         )
+
+                        buttonText = "Done!"
+                        delay(2000)
+                        buttonText = "Submit"
                     }
 
                 }, content = {
                     Text(
                         text = buildAnnotatedString {
                             withStyle(SpanStyle(color = Color.White)) {
-                                append("Submit")
+                                append(buttonText)
                             }
                         },
                         fontFamily = poppinsFont,
@@ -192,6 +203,9 @@ class DashboardScreen() : Screen {
                                 .padding(8.dp, 8.dp, 8.dp, 0.dp).clip(RoundedCornerShape(8.dp))
                                 .background(Color(0xFFB5B7C0)).clickable {
                                     selectedClass = it
+
+                                    if (selectedClass.studentList == null)
+                                        selectedClass.studentList = ArrayList()
 
                                     currentStudentList.clear()
                                     currentStudentList.addAll(selectedClass.studentList!!.toMutableStateList())
@@ -229,6 +243,17 @@ class DashboardScreen() : Screen {
                     )
 
                     Column {
+
+                        if (currentStudentList.isEmpty()) {
+                            Image(
+                                modifier = Modifier.fillMaxWidth(0.5f).fillMaxHeight(),
+                                contentScale = ContentScale.FillWidth,
+                                painter = painterResource("undraw_two_factor_auth.png"),
+                                contentDescription = "illustration"
+                            )
+
+                        }
+
                         LazyColumn(modifier = Modifier.weight(1f)) {
 
                             items(currentStudentList) {
