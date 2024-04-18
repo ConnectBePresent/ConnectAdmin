@@ -13,11 +13,18 @@ interface FirebaseDatabaseAPI {
     )
 
     @GET("/{instituteID}.json/")
-    suspend fun getInstituteDetails(@Path(value = "instituteID") instituteID: String): Response<Institution>
+    suspend fun getInstituteDetails(
+        @Path(value = "instituteID") instituteID: String
+    ): Response<Institution>
 
-    @PUT("/.json/")
-    suspend fun setInstitutionsList(@Body institutionList: ArrayList<Institution>)
+    @GET("/{instituteID}/classList.json/")
+    suspend fun getClassList(
+        @Path(value = "instituteID") instituteID: String,
+    ): Response<List<Class>>
 
-    @GET("/.json/")
-    suspend fun getInstitutionsList(): ArrayList<Institution>
+    @PUT("/{instituteID}/classList.json/")
+    suspend fun setClassList(
+        @Path(value = "instituteID") instituteID: String,
+        @Body classList: List<Class>
+    )
 }

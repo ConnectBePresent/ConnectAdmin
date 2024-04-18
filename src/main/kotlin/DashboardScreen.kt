@@ -153,16 +153,9 @@ class DashboardScreen() : Screen {
                                 Constants.KEY_INSTITUTE_ID, "null"
                             )
 
-                            val institutionsList = firebaseDatabaseAPI.getInstitutionsList()
-
-                            for (institution in institutionsList) {
-                                if (instituteID == institution.instituteID) {
-                                    institution.classList = classList
-                                }
-                            }
-
-                            firebaseDatabaseAPI.setInstitutionsList(
-                                institutionsList
+                            firebaseDatabaseAPI.setClassList(
+                                instituteID,
+                                classList
                             )
 
                             buttonText = "Done!"
@@ -291,21 +284,15 @@ class DashboardScreen() : Screen {
                             )
 
                             GlobalScope.launch {
-                                val institutionsList = firebaseDatabaseAPI.getInstitutionsList()
-
-                                for (institution in institutionsList) {
-                                    if (instituteID == institution.instituteID) {
-                                        institution.classList = classList
-                                    }
-                                }
 
                                 Settings().putString(
                                     Constants.KEY_CLASS_LIST, Gson().toJson(classList)
                                 )
 
-                                firebaseDatabaseAPI.setInstitutionsList(
-                                    institutionsList
-                                )
+                                firebaseDatabaseAPI.setClassList(
+                                    instituteID,
+                                    classList
+                                ) // TODO: live update
                             }
 
                         }, content = {
@@ -632,19 +619,13 @@ class DashboardScreen() : Screen {
                                 )
                             }
 
-                            val institutionsList = firebaseDatabaseAPI.getInstitutionsList()
-
-                            for (institution in institutionsList) {
-                                if (instituteID == institution.instituteID) institution.classList =
-                                    classList
-                            }
-
                             Settings().putString(
                                 Constants.KEY_CLASS_LIST, Gson().toJson(classList)
                             )
 
-                            firebaseDatabaseAPI.setInstitutionsList(
-                                institutionsList
+                            firebaseDatabaseAPI.setClassList(
+                                instituteID,
+                                classList
                             )
 
                             buttonText = "Done!"
