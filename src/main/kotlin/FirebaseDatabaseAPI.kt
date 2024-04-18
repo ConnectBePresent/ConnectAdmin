@@ -12,7 +12,7 @@ interface FirebaseDatabaseAPI {
         @Body institution: Institution
     )
 
-    @PUT("/{instituteID}.json/")
+    @GET("/{instituteID}.json/")
     suspend fun getInstituteDetails(@Path(value = "instituteID") instituteID: String): Response<Institution>
 
     @PUT("/.json/")

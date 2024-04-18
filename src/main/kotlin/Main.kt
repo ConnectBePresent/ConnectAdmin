@@ -12,7 +12,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 val firebaseDatabaseAPI: FirebaseDatabaseAPI =
     Retrofit.Builder().baseUrl(Constants.DB_BASE_URL).client(
         OkHttpClient.Builder().addInterceptor(
-            HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC)
+            HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
         ).build()
     ).addConverterFactory(
         GsonConverterFactory.create(
@@ -22,7 +22,7 @@ val firebaseDatabaseAPI: FirebaseDatabaseAPI =
 
 val firebaseAuthAPI: FirebaseAuthAPI = Retrofit.Builder().baseUrl(Constants.AUTH_BASE_URL).client(
     OkHttpClient.Builder().addInterceptor(
-        HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC)
+        HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
     ).build()
 ).addConverterFactory(
     GsonConverterFactory.create(

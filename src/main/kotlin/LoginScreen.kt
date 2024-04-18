@@ -42,12 +42,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
+import com.google.gson.Gson
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.Serial
+import java.util.Locale
 
 private val poppinsFont = FontFamily(
     Font(
@@ -196,8 +198,8 @@ class LoginScreen() : Screen {
                             delay(1000)
 
                             firebaseDatabaseAPI.registerInstitution(
-                                instituteID,
-                                Institution(instituteID, password)
+                                instituteID.lowercase(Locale.getDefault()),
+                                Institution(instituteID, password),
                             )
 
                             isLogin = true
@@ -338,7 +340,14 @@ class LoginScreen() : Screen {
 
                             Settings().putString(Constants.KEY_INSTITUTE_ID, instituteID)
 
-                            // TODO: set class list
+                            val institutionResponse =
+                                firebaseDatabaseAPI.getInstituteDetails(instituteID.lowercase(Locale.getDefault()))
+
+                            if (institutionResponse.isSuccessful && institutionResponse.body()?.classList != null)
+                                Settings().putString(
+                                    Constants.KEY_CLASS_LIST,
+                                    Gson().toJson(institutionResponse.body()?.classList)
+                                )
 
                             isSuccess.value = true
                         } else {
