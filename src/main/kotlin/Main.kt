@@ -9,7 +9,18 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-val firebaseAPI: FirebaseAPI = Retrofit.Builder().baseUrl(Constants.DB_BASE_URL).client(
+val firebaseDatabaseAPI: FirebaseDatabaseAPI =
+    Retrofit.Builder().baseUrl(Constants.DB_BASE_URL).client(
+        OkHttpClient.Builder().addInterceptor(
+            HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
+        ).build()
+    ).addConverterFactory(
+        GsonConverterFactory.create(
+            GsonBuilder().setLenient().serializeNulls().create()
+        )
+    ).build().create(FirebaseDatabaseAPI::class.java);
+
+val firebaseAuthAPI: FirebaseAuthAPI = Retrofit.Builder().baseUrl(Constants.AUTH_BASE_URL).client(
     OkHttpClient.Builder().addInterceptor(
         HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
     ).build()
@@ -17,7 +28,7 @@ val firebaseAPI: FirebaseAPI = Retrofit.Builder().baseUrl(Constants.DB_BASE_URL)
     GsonConverterFactory.create(
         GsonBuilder().setLenient().serializeNulls().create()
     )
-).build().create(FirebaseAPI::class.java);
+).build().create(FirebaseAuthAPI::class.java);
 
 fun main() = application {
     Window(onCloseRequest = ::exitApplication) {

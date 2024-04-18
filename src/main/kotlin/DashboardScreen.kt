@@ -153,7 +153,7 @@ class DashboardScreen() : Screen {
                                 Constants.KEY_INSTITUTE_ID, "null"
                             )
 
-                            val institutionsList = firebaseAPI.getInstitutionsList()
+                            val institutionsList = firebaseDatabaseAPI.getInstitutionsList()
 
                             for (institution in institutionsList) {
                                 if (instituteID == institution.instituteID) {
@@ -161,7 +161,7 @@ class DashboardScreen() : Screen {
                                 }
                             }
 
-                            firebaseAPI.setInstitutionsList(
+                            firebaseDatabaseAPI.setInstitutionsList(
                                 institutionsList
                             )
 
@@ -291,7 +291,7 @@ class DashboardScreen() : Screen {
                             )
 
                             GlobalScope.launch {
-                                val institutionsList = firebaseAPI.getInstitutionsList()
+                                val institutionsList = firebaseDatabaseAPI.getInstitutionsList()
 
                                 for (institution in institutionsList) {
                                     if (instituteID == institution.instituteID) {
@@ -303,7 +303,7 @@ class DashboardScreen() : Screen {
                                     Constants.KEY_CLASS_LIST, Gson().toJson(classList)
                                 )
 
-                                firebaseAPI.setInstitutionsList(
+                                firebaseDatabaseAPI.setInstitutionsList(
                                     institutionsList
                                 )
                             }
@@ -632,7 +632,7 @@ class DashboardScreen() : Screen {
                                 )
                             }
 
-                            val institutionsList = firebaseAPI.getInstitutionsList()
+                            val institutionsList = firebaseDatabaseAPI.getInstitutionsList()
 
                             for (institution in institutionsList) {
                                 if (instituteID == institution.instituteID) institution.classList =
@@ -643,7 +643,7 @@ class DashboardScreen() : Screen {
                                 Constants.KEY_CLASS_LIST, Gson().toJson(classList)
                             )
 
-                            firebaseAPI.setInstitutionsList(
+                            firebaseDatabaseAPI.setInstitutionsList(
                                 institutionsList
                             )
 

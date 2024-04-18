@@ -185,7 +185,7 @@ class LoginScreen() : Screen {
                             return@launch
                         }
 
-                        val list = firebaseAPI.getInstitutionsList()
+                        val list = firebaseDatabaseAPI.getInstitutionsList()
 
                         list.add(
                             Institution(
@@ -193,7 +193,7 @@ class LoginScreen() : Screen {
                             )
                         )
 
-                        firebaseAPI.setInstitutionsList(
+                        firebaseDatabaseAPI.setInstitutionsList(
                             list
                         )
 
@@ -320,7 +320,7 @@ class LoginScreen() : Screen {
                             return@launch
                         }
 
-                        val list = firebaseAPI.getInstitutionsList()
+                        val list = firebaseDatabaseAPI.getInstitutionsList()
                         for (institution in list) {
                             if (institution.instituteID.trim() == instituteID) {
                                 if (institution.institutePassword.trim() == password) {
