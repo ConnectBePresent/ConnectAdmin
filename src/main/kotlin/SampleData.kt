@@ -12,8 +12,8 @@ object SampleData {
             classList.add(Class(5, "B", "5B@G21010.com", "cmeWNex", studentList))
 
             val institutions: ArrayList<Institution> = ArrayList()
-            institutions.add(Institution("KL21010", "uLW8a97", classList))
-            institutions.add(Institution("KL21010", "VZCVcbA", classList))
+            institutions.add(Institution("KL21010", classList))
+            institutions.add(Institution("KL21010", classList))
 
             return institutions
         }

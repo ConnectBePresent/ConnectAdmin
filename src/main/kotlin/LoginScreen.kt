@@ -199,7 +199,7 @@ class LoginScreen() : Screen {
 
                             firebaseDatabaseAPI.registerInstitution(
                                 instituteID.lowercase(Locale.getDefault()),
-                                Institution(instituteID, password),
+                                Institution(instituteID),
                             )
 
                             isLogin = true
@@ -338,10 +338,10 @@ class LoginScreen() : Screen {
                             buttonText = "Success!!"
                             delay(1000)
 
-                            Settings().putString(Constants.KEY_INSTITUTE_ID, instituteID)
+                            Settings().putString(Constants.KEY_INSTITUTE_ID, instituteID.lowercase())
 
                             val institutionResponse =
-                                firebaseDatabaseAPI.getInstituteDetails(instituteID.lowercase(Locale.getDefault()))
+                                firebaseDatabaseAPI.getInstituteDetails(instituteID.lowercase())
 
                             if (institutionResponse.isSuccessful && institutionResponse.body()?.classList != null)
                                 Settings().putString(
