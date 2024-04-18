@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
-import com.google.gson.Gson
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -180,27 +179,33 @@ class LoginScreen() : Screen {
 
                             buttonText = "Fields Empty!!"
                             delay(1000)
-                            buttonText = "Login"
+                            buttonText = "Register"
 
                             return@launch
                         }
 
-                        val list = firebaseDatabaseAPI.getInstitutionsList()
-
-                        list.add(
-                            Institution(
-                                instituteID.trim(), password.trim()
+                        val response = firebaseAuthAPI.signUp(
+                            User(
+                                "$instituteID@connectbepresent.com",
+                                password
                             )
                         )
 
-                        firebaseDatabaseAPI.setInstitutionsList(
-                            list
-                        )
+                        if (response.isSuccessful) {
+                            buttonText = "Success!! Please Login!"
+                            delay(1000)
 
-                        buttonText = "Success!! Please Login!"
-                        delay(1000)
+                            firebaseDatabaseAPI.registerInstitution(
+                                instituteID,
+                                Institution(instituteID, password)
+                            )
 
-                        isLogin = true
+                            isLogin = true
+                        } else {
+                            buttonText = "Something went wrong, try again!"
+                            delay(1000)
+                            buttonText = "Register"
+                        }
                     }
 
                 },
@@ -320,36 +325,28 @@ class LoginScreen() : Screen {
                             return@launch
                         }
 
-                        val list = firebaseDatabaseAPI.getInstitutionsList()
-                        for (institution in list) {
-                            if (institution.instituteID.trim() == instituteID) {
-                                if (institution.institutePassword.trim() == password) {
-                                    buttonText = "Success!"
+                        val response = firebaseAuthAPI.signIn(
+                            User(
+                                "$instituteID@connectbepresent.com",
+                                password
+                            )
+                        )
 
-                                    Settings().putString(Constants.KEY_INSTITUTE_ID, instituteID)
+                        if (response.isSuccessful) {
+                            buttonText = "Success!!"
+                            delay(1000)
 
-                                    if (institution.classList != null) {
-                                        Settings().putString(
-                                            Constants.KEY_CLASS_LIST,
-                                            Gson().toJson(institution.classList)
-                                        )
-                                    }
+                            Settings().putString(Constants.KEY_INSTITUTE_ID, instituteID)
 
-                                    isSuccess.value = true
+                            // TODO: set class list
 
-                                    return@launch
-                                } else {
-                                    buttonText = "Wrong password"
-                                    delay(1000)
-                                    buttonText = "Login"
-                                    return@launch
-                                }
-                            }
+                            isSuccess.value = true
+                        } else {
+                            buttonText = "Something went wrong, try again!"
+                            delay(1000)
+                            buttonText = "Login"
                         }
 
-                        buttonText = "No such institution"
-                        delay(1000)
-                        buttonText = "Login"
                     }
                 },
                 content = {
