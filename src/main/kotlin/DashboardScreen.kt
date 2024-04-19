@@ -123,6 +123,10 @@ class DashboardScreen() : Screen {
             val typeToken = object : TypeToken<ArrayList<Class>>() {}
             val classList: ArrayList<Class> = Gson().fromJson(data, typeToken.type)
 
+            var currentClassList = remember { mutableStateListOf<Class>() }
+
+            currentClassList = classList.toMutableStateList()
+
             Row {
 
                 Text(
@@ -194,7 +198,7 @@ class DashboardScreen() : Screen {
                         .clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colors.background)
                 ) {
                     LazyColumn(Modifier.weight(1f)) {
-                        items(classList) {
+                        items(currentClassList) {
                             Column(modifier = Modifier.fillMaxWidth()
                                 .padding(8.dp, 8.dp, 8.dp, 0.dp).clip(RoundedCornerShape(8.dp))
                                 .background(Color(0xFFB5B7C0)).clickable {
@@ -274,26 +278,20 @@ class DashboardScreen() : Screen {
                             val instituteID =
                                 Settings().getString(Constants.KEY_INSTITUTE_ID, "null")
 
-                            classList.add(
-                                Class(
-                                    newClass,
-                                    newDivision,
-                                    "$newClass$newDivision@$instituteID.com",
-                                    Utils.generatePassword()
-                                )
+                            val element = Class(
+                                newClass,
+                                newDivision,
+                                "$newClass$newDivision@$instituteID.com",
+                                Utils.generatePassword()
                             )
 
-                            GlobalScope.launch {
+                            classList.add(element)
 
-                                Settings().putString(
-                                    Constants.KEY_CLASS_LIST, Gson().toJson(classList)
-                                )
+                            currentClassList.add(element) // just to update visibility
 
-                                firebaseDatabaseAPI.setClassList(
-                                    instituteID,
-                                    classList
-                                ) // TODO: live update
-                            }
+                            Settings().putString(
+                                Constants.KEY_CLASS_LIST, Gson().toJson(classList)
+                            )
 
                         }, content = {
                             Text(
@@ -443,7 +441,6 @@ class DashboardScreen() : Screen {
                             TextButton(modifier = Modifier.padding(32.dp)
                                 .align(Alignment.CenterVertically).clip(RoundedCornerShape(12.dp))
                                 .background(Color(0xFF292D32)).padding(8.dp), onClick = {
-
 
                                 val student = Student(rollNumber, name, phoneNumber)
 
