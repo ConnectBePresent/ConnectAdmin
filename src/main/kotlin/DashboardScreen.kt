@@ -191,7 +191,7 @@ class DashboardScreen() : Screen {
 
             Row(Modifier.fillMaxSize()) {
                 Column(
-                    Modifier.fillMaxHeight().fillMaxWidth(0.4f).padding(16.dp)
+                    Modifier.fillMaxHeight().fillMaxWidth(0.35f).padding(16.dp)
                         .clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colors.background)
                 ) {
                     LazyColumn(Modifier.weight(1f)) {
@@ -214,13 +214,30 @@ class DashboardScreen() : Screen {
                                         modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp),
                                         style = MaterialTheme.typography.body1,
                                         fontWeight = FontWeight.Bold,
-                                        letterSpacing = 2.sp
+                                        letterSpacing = 1.sp
                                     )
 
                                     Text(
-                                        text = it.teacherEmail,
+                                        text = buildAnnotatedString {
+                                            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                                                append("Email: ")
+                                            }
+                                            append(it.teacherEmail)
+                                        },
+                                        modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp),
+                                        letterSpacing = 2.sp,
+                                        style = MaterialTheme.typography.caption,
+                                    )
+
+                                    Text(
+                                        text = buildAnnotatedString {
+                                            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                                                append("Password: ")
+                                            }
+                                            append(it.teacherPassword)
+                                        },
                                         modifier = Modifier.padding(all = 8.dp),
-                                        letterSpacing = 4.sp,
+                                        letterSpacing = 2.sp,
                                         style = MaterialTheme.typography.caption,
                                     )
                                 }
