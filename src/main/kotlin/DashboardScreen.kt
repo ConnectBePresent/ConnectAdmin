@@ -74,8 +74,8 @@ class DashboardScreen() : Screen {
 
         currentScreen = remember { mutableStateOf(Constants.DASH_CLASS_CONFIG) }
 
-        if (settings.getString(Constants.KEY_CLASS_LIST, "null") != "null")
-            currentScreen.value = Constants.DASH_CLASS_LIST
+        if (settings.getString(Constants.KEY_CLASS_LIST, "null") != "null") currentScreen.value =
+            Constants.DASH_CLASS_LIST
 
         MaterialTheme {
             Column(Modifier.fillMaxSize()) {
@@ -143,10 +143,8 @@ class DashboardScreen() : Screen {
 
                 var buttonText by remember { mutableStateOf("Submit") }
 
-                TextButton(
-                    modifier = Modifier.padding(32.dp).align(Alignment.CenterVertically)
-                        .clip(RoundedCornerShape(12.dp)).background(Color(0xFF292D32))
-                        .padding(8.dp),
+                TextButton(modifier = Modifier.padding(32.dp).align(Alignment.CenterVertically)
+                    .clip(RoundedCornerShape(12.dp)).background(Color(0xFF292D32)).padding(8.dp),
                     onClick = {
 
                         GlobalScope.launch {
@@ -158,8 +156,7 @@ class DashboardScreen() : Screen {
                             )
 
                             firebaseDatabaseAPI.setClassList(
-                                instituteID,
-                                classList
+                                instituteID, classList
                             )
 
                             buttonText = "Done!"
@@ -199,9 +196,10 @@ class DashboardScreen() : Screen {
                 ) {
                     LazyColumn(Modifier.weight(1f)) {
                         items(currentClassList) {
-                            Column(modifier = Modifier.fillMaxWidth()
-                                .padding(8.dp, 8.dp, 8.dp, 0.dp).clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFB5B7C0)).clickable {
+
+                            Row(modifier = Modifier.fillMaxWidth().padding(8.dp, 8.dp, 8.dp, 0.dp)
+                                .clip(RoundedCornerShape(8.dp)).background(Color(0xFFB5B7C0))
+                                .clickable {
                                     selectedClass = it
 
                                     if (selectedClass.studentList == null) selectedClass.studentList =
@@ -210,20 +208,42 @@ class DashboardScreen() : Screen {
                                     currentStudentList.clear()
                                     currentStudentList.addAll(selectedClass.studentList!!.toMutableStateList())
                                 }) {
-                                Text(
-                                    "${it.standard}${it.division}",
-                                    modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp),
-                                    style = MaterialTheme.typography.body1,
-                                    fontWeight = FontWeight.Bold,
-                                    letterSpacing = 2.sp
+                                Column {
+                                    Text(
+                                        "${it.standard}${it.division}",
+                                        modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp),
+                                        style = MaterialTheme.typography.body1,
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 2.sp
+                                    )
+
+                                    Text(
+                                        text = it.teacherEmail,
+                                        modifier = Modifier.padding(all = 8.dp),
+                                        letterSpacing = 4.sp,
+                                        style = MaterialTheme.typography.caption,
+                                    )
+                                }
+
+                                Spacer(Modifier.weight(1f))
+
+                                Icon(
+                                    modifier = Modifier.padding(8.dp).size(24.dp)
+                                        .align(Alignment.CenterVertically).clickable {
+
+                                            currentClassList.remove(it)
+
+                                            classList.remove(it)
+
+                                            Settings().putString(
+                                                Constants.KEY_CLASS_LIST, Gson().toJson(classList)
+                                            )
+
+                                        },
+                                    painter = painterResource("delete.png"),
+                                    contentDescription = "class delete icon"
                                 )
 
-                                Text(
-                                    text = it.teacherEmail,
-                                    modifier = Modifier.padding(all = 8.dp),
-                                    letterSpacing = 4.sp,
-                                    style = MaterialTheme.typography.caption,
-                                )
                             }
                         }
                     }
@@ -337,13 +357,13 @@ class DashboardScreen() : Screen {
 
                             items(currentStudentList) {
 
-                                Row {
-                                    Column(modifier = Modifier.weight(1f)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth()
                                         .padding(8.dp, 8.dp, 8.dp, 0.dp)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(Color(0xFFB5B7C0)).clickable {
-
-                                        }) {
+                                        .background(Color(0xFFB5B7C0))
+                                ) {
+                                    Column() {
                                         Text(
                                             "${it.rollNumber} | ${it.name}",
                                             modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp),
@@ -360,12 +380,30 @@ class DashboardScreen() : Screen {
                                         )
                                     }
 
-//                                    Spacer(Modifier.weight(1f))
-//                                    Icon(
-//                                        modifier = Modifier.weight(1f),
-//                                        painter = painterResource("delete.png"),
-//                                        contentDescription = "person icon"
-//                                    )
+                                    Spacer(Modifier.weight(1f))
+
+                                    Icon(
+                                        modifier = Modifier.padding(8.dp).size(24.dp)
+                                            .align(Alignment.CenterVertically).clickable {
+
+                                                currentStudentList.remove(it)
+                                                selectedClass.studentList?.remove(it)
+
+                                                currentClassList.remove(selectedClass)
+                                                currentClassList.add(selectedClass)
+
+                                                classList.remove(selectedClass)
+                                                classList.add(selectedClass)
+
+                                                Settings().putString(
+                                                    Constants.KEY_CLASS_LIST,
+                                                    Gson().toJson(classList)
+                                                )
+
+                                            },
+                                        painter = painterResource("delete.png"),
+                                        contentDescription = "student delete icon"
+                                    )
                                 }
                             }
                         }
@@ -621,8 +659,7 @@ class DashboardScreen() : Screen {
                             )
 
                             firebaseDatabaseAPI.setClassList(
-                                instituteID,
-                                classList
+                                instituteID, classList
                             )
 
                             buttonText = "Done!"
