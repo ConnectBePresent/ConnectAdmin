@@ -41,8 +41,11 @@ compose.desktop {
     application {
         mainClass = "MainKt"
 
+//      https://github.com/JetBrains/compose-multiplatform/blob/master/tutorials/Native_distributions_and_local_execution/README.md
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+//            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg)
+            includeAllModules = true
             packageName = "ConnectAdmin"
             packageVersion = "1.0.0"
         }
