@@ -51,16 +51,23 @@ import cafe.adriel.voyager.core.screen.Screen
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.russhwolf.settings.Settings
+import io.github.koalaplot.core.pie.BezierLabelConnector
+import io.github.koalaplot.core.pie.DefaultSlice
+import io.github.koalaplot.core.pie.PieChart
+import io.github.koalaplot.core.util.ExperimentalKoalaPlotApi
+import io.github.koalaplot.core.util.generateHueColorPalette
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.Serial
+import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 
 private val poppinsFont = FontFamily(Font(resource = "poppins.ttf"))
 
 class DashboardScreen() : Screen {
+    @OptIn(ExperimentalKoalaPlotApi::class)
     @Composable
     override fun Content() {
 
@@ -414,7 +421,7 @@ class DashboardScreen() : Screen {
 
                             }
 
-                            if (currentScreen == Constants.DASH_CLASS_LIST) {
+                            if (currentScreen != Constants.DASH_CLASS_LIST) {
                                 Column {
 
                                     if (currentStudentList.isEmpty()) {
@@ -597,6 +604,34 @@ class DashboardScreen() : Screen {
 
                             } else {
 
+                                Spacer(Modifier.weight(1f))
+
+                                val rand = Math.random().toFloat()
+
+                                val values = listOf(
+                                    rand, 1 - rand
+                                )
+
+                                PieChart(
+                                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                                    values = values,
+                                    label = {
+                                        if (it == 0) Text("Absent ${(values.get(it) * 100).roundToInt()}%")
+                                        else Text("Present ${(values.get(it) * 100).roundToInt()}%")
+                                    },
+                                    labelConnector = @Composable {
+                                        BezierLabelConnector()
+                                    },
+                                    slice = @Composable {
+                                        val colors =
+                                            remember(values.size) { generateHueColorPalette(values.size) }
+
+                                        DefaultSlice(colors[it])
+                                    },
+                                    forceCenteredPie = true
+                                )
+
+                                Spacer(Modifier.weight(1f))
                             }
                         }
                     }
