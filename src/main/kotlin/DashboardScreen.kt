@@ -109,8 +109,8 @@ class DashboardScreen() : Screen {
     private @Composable
     fun ClassList() {
         Column(
-            Modifier.fillMaxSize().padding(32.dp, 16.dp, 32.dp, 0.dp)
-                .clip(RoundedCornerShape(16.dp, 16.dp, 0.dp, 0.dp)).background(Color(0xFFB5B7C0))
+            Modifier.fillMaxSize().padding(32.dp)
+                .clip(RoundedCornerShape(16.dp)).background(Constants.SURFACE_COLOR)
         ) {
 
             var currentSubScreen: MutableState<String> =
@@ -143,8 +143,10 @@ class DashboardScreen() : Screen {
 
                 var buttonText by remember { mutableStateOf("Submit") }
 
-                TextButton(modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically)
-                    .clip(RoundedCornerShape(12.dp)).background(Color(0xFF292D32)).padding(8.dp),
+                TextButton(
+                    modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically)
+                        .clip(RoundedCornerShape(12.dp)).background(Color(0xFF292D32))
+                        .padding(8.dp),
                     onClick = {
 
                         GlobalScope.launch {
@@ -181,6 +183,7 @@ class DashboardScreen() : Screen {
                 )
 
             }
+
             var selectedClass by remember {
                 mutableStateOf(
                     classList.get(0)
@@ -189,16 +192,20 @@ class DashboardScreen() : Screen {
 
             var currentStudentList = remember { mutableStateListOf<Student>() }
 
-            Row(Modifier.fillMaxSize()) {
+            Row(
+                Modifier.fillMaxSize().padding(8.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            ) {
                 Column(
-                    Modifier.fillMaxHeight().fillMaxWidth(0.35f).padding(16.dp, 8.dp, 16.dp, 0.dp)
+                    Modifier.fillMaxHeight().fillMaxWidth(0.35f).padding(8.dp)
                         .clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colors.background)
+                        .padding(8.dp)
                 ) {
                     LazyColumn(Modifier.weight(1f)) {
                         items(currentClassList) {
 
                             Row(modifier = Modifier.fillMaxWidth().padding(8.dp, 8.dp, 8.dp, 0.dp)
-                                .clip(RoundedCornerShape(8.dp)).background(Color(0xFFB5B7C0))
+                                .clip(RoundedCornerShape(8.dp)).background(Constants.SURFACE_COLOR)
                                 .clickable {
                                     selectedClass = it
 
@@ -347,8 +354,9 @@ class DashboardScreen() : Screen {
                 }
 
                 Column(
-                    Modifier.fillMaxHeight().fillMaxWidth().padding(16.dp, 8.dp, 16.dp, 0.dp)
+                    Modifier.fillMaxHeight().fillMaxWidth().padding(8.dp)
                         .clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colors.background)
+                        .padding(8.dp)
                 ) {
 
                     Row {
@@ -396,7 +404,7 @@ class DashboardScreen() : Screen {
                             modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp),
                             border = BorderStroke(
 //                                if (currentScreen.value == Constants.DASH_CLASS_CONFIG) 4.dp else
-                                    1.dp,
+                                1.dp,
                                 Color(0xFF292D32)
                             ),
                             colors = ButtonDefaults.outlinedButtonColors(
@@ -437,7 +445,7 @@ class DashboardScreen() : Screen {
                                     modifier = Modifier.fillMaxWidth()
                                         .padding(8.dp, 8.dp, 8.dp, 0.dp)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(Color(0xFFB5B7C0))
+                                        .background(Constants.SURFACE_COLOR)
                                 ) {
                                     Column() {
                                         Text(

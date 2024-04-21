@@ -93,6 +93,7 @@ class LoginScreen() : Screen {
             )
             else Navigator(ClassConfigScreen())
         }
+
     }
 
     @Composable

@@ -1,4 +1,8 @@
+import androidx.compose.ui.graphics.Color
+
 object Constants {
+
+    val SURFACE_COLOR = Color(0x706750A4)
 
     const val AUTH_BASE_URL = "https://identitytoolkit.googleapis.com/"
 
