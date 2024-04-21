@@ -41,8 +41,12 @@ fun App() {
 
 //    GlobalScope.launch { }
 
-    if (Settings().getString(Constants.KEY_INSTITUTE_ID, "null") != "null") Navigator(
-        DashboardScreen()
-    )
-    else Navigator(LoginScreen())
+    val settings = Settings()
+
+    if (settings.getString(Constants.KEY_INSTITUTE_ID, "null") != "null") {
+        if (settings.getString(Constants.KEY_CLASS_LIST, "null") != "null")
+            Navigator(DashboardScreen())
+        else
+            Navigator(ClassConfigScreen())
+    } else Navigator(LoginScreen())
 }

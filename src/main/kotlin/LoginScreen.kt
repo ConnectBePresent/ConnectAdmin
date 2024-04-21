@@ -31,7 +31,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -51,11 +50,7 @@ import kotlinx.coroutines.launch
 import java.io.Serial
 import java.util.Locale
 
-private val poppinsFont = FontFamily(
-    Font(
-        resource = "poppins.ttf", weight = FontWeight.W200, style = FontStyle.Normal
-    )
-)
+private val poppinsFont = FontFamily(Font(resource = "poppins.ttf"))
 
 private lateinit var isSuccess: MutableState<Boolean>
 
@@ -92,7 +87,12 @@ class LoginScreen() : Screen {
             }
         }
 
-        if (isSuccess.value) moveToDashBoard()
+        if (isSuccess.value) {
+            if (Settings().getString(Constants.KEY_CLASS_LIST, "null") != "null") Navigator(
+                DashboardScreen()
+            )
+            else Navigator(ClassConfigScreen())
+        }
     }
 
     @Composable
@@ -170,9 +170,8 @@ class LoginScreen() : Screen {
 
             var buttonText by remember { mutableStateOf("Register") }
 
-            TextButton(
-                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
-                    .padding(16.dp, 16.dp, 16.dp, 0.dp),
+            TextButton(modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
+                .padding(16.dp, 16.dp, 16.dp, 0.dp),
                 onClick = {
 
                     GlobalScope.launch {
@@ -188,8 +187,7 @@ class LoginScreen() : Screen {
 
                         val response = firebaseAuthAPI.signUp(
                             User(
-                                "$instituteID@connectbepresent.com",
-                                password
+                                "$instituteID@connectbepresent.com", password
                             )
                         )
 
@@ -311,9 +309,8 @@ class LoginScreen() : Screen {
 
             var buttonText by remember { mutableStateOf("Login") }
 
-            TextButton(
-                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
-                    .padding(16.dp, 16.dp, 16.dp, 0.dp),
+            TextButton(modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
+                .padding(16.dp, 16.dp, 16.dp, 0.dp),
                 onClick = {
 
                     GlobalScope.launch {
@@ -329,8 +326,7 @@ class LoginScreen() : Screen {
 
                         val response = firebaseAuthAPI.signIn(
                             User(
-                                "$instituteID@connectbepresent.com",
-                                password
+                                "$instituteID@connectbepresent.com", password
                             )
                         )
 
@@ -338,16 +334,17 @@ class LoginScreen() : Screen {
                             buttonText = "Success!!"
                             delay(1000)
 
-                            Settings().putString(Constants.KEY_INSTITUTE_ID, instituteID.lowercase())
+                            Settings().putString(
+                                Constants.KEY_INSTITUTE_ID, instituteID.lowercase()
+                            )
 
                             val institutionResponse =
                                 firebaseDatabaseAPI.getInstituteDetails(instituteID.lowercase())
 
-                            if (institutionResponse.isSuccessful && institutionResponse.body()?.classList != null)
-                                Settings().putString(
-                                    Constants.KEY_CLASS_LIST,
-                                    Gson().toJson(institutionResponse.body()?.classList)
-                                )
+                            if (institutionResponse.isSuccessful && institutionResponse.body()?.classList != null) Settings().putString(
+                                Constants.KEY_CLASS_LIST,
+                                Gson().toJson(institutionResponse.body()?.classList)
+                            )
 
                             isSuccess.value = true
                         } else {
@@ -425,11 +422,6 @@ class LoginScreen() : Screen {
         }
 
         return isLogin
-    }
-
-    @Composable
-    private fun moveToDashBoard() {
-        Navigator(DashboardScreen())
     }
 
     companion object {
