@@ -63,37 +63,36 @@ class LoginScreen() : Screen {
 
         isSuccess = remember { mutableStateOf(false) }
 
-        MaterialTheme {
-            Column {
-                Text(
-                    modifier = Modifier.padding(16.dp),
-                    text = "Connect - Be Present",
-                    fontFamily = poppinsFont,
-                    fontSize = 36.sp,
-                    fontWeight = FontWeight.Medium
-                )
-
-                Row {
-                    Image(
-                        modifier = Modifier.fillMaxWidth(0.5f).fillMaxHeight(),
-                        contentScale = ContentScale.FillWidth,
-                        painter = painterResource("undraw_two_factor_auth.png"),
-                        contentDescription = "illustration"
-                    )
-
-                    if (isLogin) isLogin = Login(isLogin)
-                    else isLogin = SignUp(isLogin)
-                }
-            }
-        }
-
         if (isSuccess.value) {
             if (Settings().getString(Constants.KEY_CLASS_LIST, "null") != "null") Navigator(
                 DashboardScreen()
             )
             else Navigator(ClassConfigScreen())
-        }
+        } else {
+            MaterialTheme {
+                Column {
+                    Text(
+                        modifier = Modifier.padding(16.dp),
+                        text = "Connect - Be Present",
+                        fontFamily = poppinsFont,
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Medium
+                    )
 
+                    Row {
+                        Image(
+                            modifier = Modifier.fillMaxWidth(0.5f).fillMaxHeight(),
+                            contentScale = ContentScale.FillWidth,
+                            painter = painterResource("undraw_two_factor_auth.png"),
+                            contentDescription = "illustration"
+                        )
+
+                        if (isLogin) isLogin = Login(isLogin)
+                        else isLogin = SignUp(isLogin)
+                    }
+                }
+            }
+        }
     }
 
     @Composable

@@ -304,25 +304,34 @@ class DashboardScreen() : Screen {
                                         .clip(RoundedCornerShape(12.dp))
                                         .background(Color(0xFF292D32)).padding(8.dp).weight(1f),
                                     onClick = {
-
-                                        val instituteID =
+                                        GlobalScope.launch {
+                                            val instituteID =
                                             Settings().getString(Constants.KEY_INSTITUTE_ID, "null")
 
-                                        val element = Class(
-                                            newClass,
-                                            newDivision,
-                                            "$newClass$newDivision@$instituteID.com",
-                                            Utils.generatePassword()
-                                        )
+                                            val password = Utils.generatePassword()
 
-                                        classList.add(element)
+                                            val element = Class(
+                                                newClass,
+                                                newDivision,
+                                                "$newClass$newDivision@$instituteID.com",
+                                                password
+                                            )
 
-                                        currentClassList.add(element) // just to update visibility
+                                            classList.add(element)
 
-                                        Settings().putString(
-                                            Constants.KEY_CLASS_LIST, Gson().toJson(classList)
-                                        )
+                                            currentClassList.add(element) // just to update visibility
 
+                                            Settings().putString(
+                                                Constants.KEY_CLASS_LIST, Gson().toJson(classList)
+                                            )
+
+                                            firebaseAuthAPI.signUp(
+                                                User(
+                                                    "$newClass$newDivision@$instituteID.com",
+                                                    password
+                                                )
+                                            )
+                                        }
                                     },
                                     content = {
                                         Text(
@@ -421,7 +430,7 @@ class DashboardScreen() : Screen {
 
                             }
 
-                            if (currentScreen != Constants.DASH_CLASS_LIST) {
+                            if (currentScreen == Constants.DASH_CLASS_LIST) {
                                 Column {
 
                                     if (currentStudentList.isEmpty()) {
