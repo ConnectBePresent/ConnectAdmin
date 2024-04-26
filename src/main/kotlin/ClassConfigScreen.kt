@@ -58,12 +58,13 @@ class ClassConfigScreen : Screen {
 
     @Composable
     override fun Content() {
+
+        isSuccess = remember { mutableStateOf(false) }
+
         if (isSuccess.value)
             Navigator(DashboardScreen())
         else {
             MaterialTheme {
-
-                isSuccess = remember { mutableStateOf(false) }
 
                 Column {
 
