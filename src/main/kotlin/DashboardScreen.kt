@@ -186,7 +186,7 @@ class DashboardScreen() : Screen {
                                 .background(MaterialTheme.colors.background).padding(8.dp)
                         ) {
                             LazyColumn(Modifier.weight(1f)) {
-                                items(currentClassList) {
+                                items(currentClassList.sortedBy { it.standard * 10 + it.division[0].code }) {
 
                                     Row(modifier = Modifier.fillMaxWidth()
                                         .padding(8.dp, 8.dp, 8.dp, 0.dp)
@@ -301,6 +301,8 @@ class DashboardScreen() : Screen {
                                         )
                                     })
 
+                                var buttonText by remember { mutableStateOf("Add Class") }
+
                                 TextButton(
                                     modifier = Modifier.padding(32.dp)
                                         .align(Alignment.CenterVertically)
@@ -308,15 +310,30 @@ class DashboardScreen() : Screen {
                                         .background(Color(0xFF292D32)).padding(8.dp).weight(1f),
                                     onClick = {
                                         GlobalScope.launch {
+
                                             val instituteID =
                                             Settings().getString(Constants.KEY_INSTITUTE_ID, "null")
+
+                                            val teacherEmail =
+                                                "$newClass$newDivision@$instituteID.com"
+
+                                            classList.forEach {
+                                                if (it.teacherEmail == teacherEmail) {
+                                                    buttonText = "Duplicate Class!"
+                                                    newClass = 0
+                                                    newDivision = ""
+
+                                                    delay(2000)
+                                                    buttonText = "Add Class"
+
+                                                    return@launch
+                                                }
+                                            }
 
                                             val password = Utils.generatePassword()
 
                                             val element = Class(
-                                                newClass,
-                                                newDivision,
-                                                "$newClass$newDivision@$instituteID.com",
+                                                newClass, newDivision, teacherEmail,
                                                 password
                                             )
 
@@ -330,7 +347,7 @@ class DashboardScreen() : Screen {
 
                                             firebaseAuthAPI.signUp(
                                                 User(
-                                                    "$newClass$newDivision@$instituteID.com",
+                                                    teacherEmail,
                                                     password
                                                 )
                                             )
@@ -340,7 +357,7 @@ class DashboardScreen() : Screen {
                                         Text(
                                             text = buildAnnotatedString {
                                                 withStyle(SpanStyle(color = Color.White)) {
-                                                    append("Add Class")
+                                                    append(buttonText)
                                                 }
                                             },
                                             fontFamily = poppinsFont,
@@ -451,35 +468,42 @@ class DashboardScreen() : Screen {
                                         FilePicker(
                                             show = showFilePicker, fileExtensions = listOf("csv")
                                         ) { platformFile ->
+
                                             showFilePicker = false
 
-                                            val lists =
-                                                csvReader().readAll(File(platformFile!!.path))
+                                            if (platformFile == null) return@FilePicker
 
-                                            val studentList = ArrayList<Student>()
+                                            GlobalScope.launch {
+                                                val lists =
+                                                    csvReader().readAll(File(platformFile.path))
 
-                                            for (list in lists) {
-                                                studentList.add(
-                                                    Student(
-                                                        list.get(0).toInt(),
-                                                        list.get(1),
-                                                        list.get(2)
+                                                val studentList = ArrayList<Student>()
+
+                                                for (list in lists) {
+                                                    studentList.add(
+                                                        Student(
+                                                            list.get(0).toInt(),
+                                                            list.get(1),
+                                                            list.get(2)
+                                                        )
                                                     )
+                                                }
+
+                                                selectedClass.studentList = studentList
+
+                                                currentClassList.remove(selectedClass)
+                                                currentClassList.add(selectedClass)
+
+                                                classList.remove(selectedClass)
+                                                classList.add(selectedClass)
+
+                                                Settings().putString(
+                                                    Constants.KEY_CLASS_LIST,
+                                                    Gson().toJson(classList)
                                                 )
+
+                                                currentStudentList.addAll(studentList)
                                             }
-
-                                            selectedClass.studentList = studentList
-
-                                            currentClassList.remove(selectedClass)
-                                            currentClassList.add(selectedClass)
-
-                                            classList.remove(selectedClass)
-                                            classList.add(selectedClass)
-
-                                            Settings().putString(
-                                                Constants.KEY_CLASS_LIST, Gson().toJson(classList)
-                                            )
-
                                         }
 
                                         TextButton(
@@ -511,7 +535,7 @@ class DashboardScreen() : Screen {
 
                                     LazyColumn(modifier = Modifier.weight(1f)) {
 
-                                        items(currentStudentList) {
+                                        items(currentStudentList.sortedBy { it.rollNumber }) {
 
                                             Row(
                                                 modifier = Modifier.fillMaxWidth()
@@ -639,33 +663,49 @@ class DashboardScreen() : Screen {
                                             })
                                         Spacer(Modifier.weight(1f))
 
+                                        var buttonText by remember { mutableStateOf("Add Student") }
+
                                         TextButton(
                                             modifier = Modifier.padding(32.dp)
                                                 .align(Alignment.CenterVertically)
                                                 .clip(RoundedCornerShape(12.dp))
                                                 .background(Color(0xFF292D32)).padding(8.dp),
                                             onClick = {
+                                                GlobalScope.launch {
 
-                                                val student = Student(rollNumber, name, phoneNumber)
+                                                    selectedClass.studentList?.forEach {
+                                                        if (it.rollNumber == rollNumber) {
+                                                            buttonText = "Duplicate roll number!"
+                                                            rollNumber = 0
 
-                                                selectedClass.studentList?.add(student)
+                                                            delay(2000)
+                                                            buttonText = "Add Student"
 
-                                                classList.remove(selectedClass)
-                                                classList.add(selectedClass)
+                                                            return@launch
+                                                        }
+                                                    }
 
-                                                Settings().putString(
-                                                    Constants.KEY_CLASS_LIST,
-                                                    Gson().toJson(classList)
-                                                )
+                                                    val student =
+                                                        Student(rollNumber, name, phoneNumber)
 
-                                                currentStudentList.add(student) // just to update the visible list
+                                                    selectedClass.studentList?.add(student)
 
+                                                    classList.remove(selectedClass)
+                                                    classList.add(selectedClass)
+
+                                                    Settings().putString(
+                                                        Constants.KEY_CLASS_LIST,
+                                                        Gson().toJson(classList)
+                                                    )
+
+                                                    currentStudentList.add(student) // just to update the visible list
+                                                }
                                             },
                                             content = {
                                                 Text(
                                                     text = buildAnnotatedString {
                                                         withStyle(SpanStyle(color = Color.White)) {
-                                                            append("Add Student")
+                                                            append(buttonText)
                                                         }
                                                     },
                                                     fontFamily = poppinsFont,
