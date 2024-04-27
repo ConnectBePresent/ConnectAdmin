@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ButtonDefaults
@@ -410,7 +411,9 @@ class LoginScreen() : Screen {
                 Spacer(Modifier.weight(1.0f))
 
                 TextButton(
-                    modifier = Modifier.align(Alignment.CenterVertically)
+                    modifier = Modifier
+                        .size(0.dp) // :feeble_smile:
+                        .align(Alignment.CenterVertically)
                         .padding(16.dp, 0.dp, 0.dp, 16.dp),
                     onClick = {},
                     content = {
