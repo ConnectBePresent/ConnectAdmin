@@ -53,13 +53,14 @@ import java.util.Locale
 private val poppinsFont = FontFamily(Font(resource = "poppins.ttf"))
 
 private lateinit var isSuccess: MutableState<Boolean>
+private lateinit var isLogin: MutableState<Boolean>
 
 class LoginScreen() : Screen {
 
     @Composable
     override fun Content() {
 
-        var isLogin by remember { mutableStateOf(true) }
+        isLogin = remember { mutableStateOf(true) }
 
         isSuccess = remember { mutableStateOf(false) }
 
@@ -87,8 +88,8 @@ class LoginScreen() : Screen {
                             contentDescription = "illustration"
                         )
 
-                        if (isLogin) isLogin = Login(isLogin)
-                        else isLogin = SignUp(isLogin)
+                        if (isLogin.value) Login()
+                        else SignUp()
                     }
                 }
             }
@@ -96,9 +97,7 @@ class LoginScreen() : Screen {
     }
 
     @Composable
-    fun SignUp(current: Boolean): Boolean {
-
-        var isLogin by remember { mutableStateOf(current) }
+    fun SignUp() {
 
         Column(
             Modifier.fillMaxWidth().fillMaxHeight(), verticalArrangement = Arrangement.Center
@@ -212,7 +211,7 @@ class LoginScreen() : Screen {
                                 Institution(instituteID),
                             )
 
-                            isLogin = true
+                            isLogin.value = true
                         } else {
                             buttonText = "Something went wrong, try again!"
                             delay(1000)
@@ -238,7 +237,7 @@ class LoginScreen() : Screen {
                     modifier = Modifier.align(Alignment.CenterVertically)
                         .padding(16.dp, 0.dp, 0.dp, 16.dp),
                     onClick = {
-                        isLogin = true
+                        isLogin.value = true
                     },
                     content = {
                         Text(
@@ -266,13 +265,10 @@ class LoginScreen() : Screen {
                 )
             }
         }
-        return isLogin
     }
 
     @Composable
-    fun Login(current: Boolean): Boolean {
-
-        var isLogin by remember { mutableStateOf(current) }
+    fun Login() {
 
         Column(
             Modifier.fillMaxWidth().fillMaxHeight(), verticalArrangement = Arrangement.Center
@@ -384,7 +380,7 @@ class LoginScreen() : Screen {
                     modifier = Modifier.align(Alignment.CenterVertically)
                         .padding(16.dp, 0.dp, 0.dp, 16.dp),
                     onClick = {
-                        isLogin = false
+                        isLogin.value = false
                     },
                     content = {
                         Text(
@@ -432,8 +428,6 @@ class LoginScreen() : Screen {
                 )
             }
         }
-
-        return isLogin
     }
 
     companion object {
