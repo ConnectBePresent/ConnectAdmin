@@ -176,13 +176,25 @@ class LoginScreen() : Screen {
 
                     GlobalScope.launch {
 
-                        if (instituteID.isBlank() || password.isBlank() || confirmPassword.isBlank() || password != confirmPassword) {
+                        if (instituteID.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
 
                             buttonText = "Fields Empty!!"
                             delay(1000)
                             buttonText = "Register"
 
                             return@launch
+                        }
+
+                        if (password != confirmPassword) {
+                            buttonText = "Passwords do not match"
+                            delay(1000)
+                            buttonText = "Register"
+                        }
+
+                        if (password.length < 6) {
+                            buttonText = "Password length should be atleast 6"
+                            delay(1000)
+                            buttonText = "Register"
                         }
 
                         val response = firebaseAuthAPI.signUp(
