@@ -48,6 +48,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
+import com.darkrockstudios.libraries.mpfilepicker.FilePicker
+import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.russhwolf.settings.Settings
@@ -60,6 +62,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
 import java.io.Serial
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
@@ -434,12 +437,76 @@ class DashboardScreen() : Screen {
                                 Column {
 
                                     if (currentStudentList.isEmpty()) {
+                                        Spacer(Modifier.weight(1f))
+
                                         Image(
                                             modifier = Modifier.fillMaxSize(0.5f)
                                                 .align(Alignment.CenterHorizontally),
                                             painter = painterResource("undraw_no_data.png"),
                                             contentDescription = "undraw_no_data"
                                         )
+
+                                        var showFilePicker by remember { mutableStateOf(false) }
+
+                                        FilePicker(
+                                            show = showFilePicker, fileExtensions = listOf("csv")
+                                        ) { platformFile ->
+                                            showFilePicker = false
+
+                                            val lists =
+                                                csvReader().readAll(File(platformFile!!.path))
+
+                                            val studentList = ArrayList<Student>()
+
+                                            for (list in lists) {
+                                                studentList.add(
+                                                    Student(
+                                                        list.get(0).toInt(),
+                                                        list.get(1),
+                                                        list.get(2)
+                                                    )
+                                                )
+                                            }
+
+                                            selectedClass.studentList = studentList
+
+                                            currentClassList.remove(selectedClass)
+                                            currentClassList.add(selectedClass)
+
+                                            classList.remove(selectedClass)
+                                            classList.add(selectedClass)
+
+                                            Settings().putString(
+                                                Constants.KEY_CLASS_LIST, Gson().toJson(classList)
+                                            )
+
+                                        }
+
+                                        TextButton(
+                                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                                                .padding(16.dp),
+                                            border = BorderStroke(1.dp, Color(0xFF292D32)),
+                                            colors = ButtonDefaults.outlinedButtonColors(
+                                                contentColor = Color(
+                                                    0xFF292D32
+                                                )
+                                            ),
+                                            shape = RoundedCornerShape(12.dp),
+                                            contentPadding = PaddingValues(12.dp),
+                                            onClick = {
+                                                showFilePicker = true
+                                            },
+                                            content = {
+                                                Text(
+                                                    text = "Import CSV File",
+                                                    fontFamily = poppinsFont,
+                                                    fontSize = 16.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            },
+                                        )
+
+                                        Spacer(Modifier.weight(1f))
                                     }
 
                                     LazyColumn(modifier = Modifier.weight(1f)) {
