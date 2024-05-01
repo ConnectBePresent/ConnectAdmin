@@ -46,11 +46,30 @@ compose.desktop {
 
 //      https://github.com/JetBrains/compose-multiplatform/blob/master/tutorials/Native_distributions_and_local_execution/README.md
         nativeDistributions {
-//            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            targetFormats(TargetFormat.Dmg)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             includeAllModules = true
+
             packageName = "ConnectAdmin"
             packageVersion = "1.0.0"
+
+            description = "Connect - Be Present Admin Configuration Softwarwe"
+            copyright = "Copyright (C) 2024 Vishnu Sanal T"
+//            licenseFile.set(project.file("LICENSE.txt"))
+
+            macOS {
+                iconFile.set(project.file("icon.png"))
+            }
+            windows {
+                iconFile.set(project.file("icon.png"))
+            }
+            linux {
+                iconFile.set(project.file("icon.png"))
+            }
+        }
+
+        buildTypes.release.proguard {
+            obfuscate.set(true)
+            optimize.set(true)
         }
     }
 }
