@@ -1,6 +1,7 @@
 @file:OptIn(DelicateCoroutinesApi::class)
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,7 +27,10 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.material3.DisplayMode
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,25 +56,26 @@ import com.darkrockstudios.libraries.mpfilepicker.FilePicker
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
+import com.mohamedrejeb.calf.ui.datepicker.rememberAdaptiveDatePickerState
 import com.russhwolf.settings.Settings
-import io.github.koalaplot.core.pie.BezierLabelConnector
-import io.github.koalaplot.core.pie.DefaultSlice
-import io.github.koalaplot.core.pie.PieChart
 import io.github.koalaplot.core.util.ExperimentalKoalaPlotApi
-import io.github.koalaplot.core.util.generateHueColorPalette
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.Serial
-import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 
 private val poppinsFont = FontFamily(Font(resource = "poppins.ttf"))
 
 class DashboardScreen() : Screen {
-    @OptIn(ExperimentalKoalaPlotApi::class)
+    @OptIn(
+        ExperimentalKoalaPlotApi::class,
+        ExperimentalFoundationApi::class,
+        ExperimentalMaterial3Api::class
+    )
     @Composable
     override fun Content() {
 
@@ -311,8 +316,9 @@ class DashboardScreen() : Screen {
                                     onClick = {
                                         GlobalScope.launch {
 
-                                            val instituteID =
-                                            Settings().getString(Constants.KEY_INSTITUTE_ID, "null")
+                                            val instituteID = Settings().getString(
+                                                Constants.KEY_INSTITUTE_ID, "null"
+                                            )
 
                                             val teacherEmail =
                                                 "$newClass$newDivision@$instituteID.com"
@@ -333,8 +339,7 @@ class DashboardScreen() : Screen {
                                             val password = Utils.generatePassword()
 
                                             val element = Class(
-                                                newClass, newDivision, teacherEmail,
-                                                password
+                                                newClass, newDivision, teacherEmail, password
                                             )
 
                                             classList.add(element)
@@ -347,8 +352,7 @@ class DashboardScreen() : Screen {
 
                                             firebaseAuthAPI.signUp(
                                                 User(
-                                                    teacherEmail,
-                                                    password
+                                                    teacherEmail, password
                                                 )
                                             )
                                         }
@@ -425,7 +429,7 @@ class DashboardScreen() : Screen {
                                     modifier = Modifier.align(Alignment.CenterVertically)
                                         .padding(16.dp),
                                     border = BorderStroke(
-                                        if (currentScreen == Constants.DASH_CLASS_ANALYSIS) 4.dp else 1.dp,
+                                        if (currentScreen == Constants.DASH_ATTENDANCE_HISTORY) 4.dp else 1.dp,
                                         Color(0xFF292D32)
                                     ),
                                     colors = ButtonDefaults.outlinedButtonColors(
@@ -436,11 +440,11 @@ class DashboardScreen() : Screen {
                                     shape = RoundedCornerShape(12.dp),
                                     contentPadding = PaddingValues(12.dp),
                                     onClick = {
-                                        currentScreen = Constants.DASH_CLASS_ANALYSIS
+                                        currentScreen = Constants.DASH_ATTENDANCE_HISTORY
                                     },
                                     content = {
                                         Text(
-                                            text = "Class Analysis",
+                                            text = "Attendance History",
                                             fontFamily = poppinsFont,
                                             fontSize = 16.sp,
                                             fontWeight = FontWeight.Bold
@@ -720,9 +724,75 @@ class DashboardScreen() : Screen {
 
                             } else {
 
-                                Spacer(Modifier.weight(1f))
+                                val state = rememberAdaptiveDatePickerState()
 
-                                val rand = Math.random().toFloat()
+                                AdaptiveDatePicker(
+                                    state = state,
+                                )
+
+                                var text by remember { mutableStateOf("Pick a date") }
+                                var date by remember { mutableStateOf("") }
+
+                                val absenteeList = remember { mutableStateListOf<Student>() }
+
+                                LaunchedEffect(state.selectedDateMillis) {
+
+                                    if (state.selectedDateMillis == null) return@LaunchedEffect
+
+                                    state.displayMode = DisplayMode.Input
+
+                                    date = Utils.getDate(state.selectedDateMillis!!)
+
+                                    val response = firebaseDatabaseAPI.getAttendance(
+                                        selectedClass.teacherEmail.lowercase().replace(".com", ""),
+                                        date
+                                    )
+
+                                    if (response.isSuccessful && response.body() != null) {
+                                        text = "Absentees of $date"
+                                        absenteeList.clear()
+                                        absenteeList.addAll(response.body()!!.toMutableList())
+                                    } else {
+                                        text = "Absentee data not found."
+                                    }
+                                }
+
+                                Text(
+                                    text,
+                                    modifier = Modifier.padding(16.dp),
+                                    style = MaterialTheme.typography.body1,
+                                    fontWeight = FontWeight.Bold
+                                )
+
+                                LazyColumn {
+                                    items(absenteeList.sortedBy { it.rollNumber }) {
+                                        Column(
+                                            Modifier.fillMaxWidth().padding(8.dp, 8.dp, 8.dp, 0.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(Constants.SURFACE_COLOR)
+                                        ) {
+                                            Text(
+                                                "${it.rollNumber} | ${it.name}",
+                                                modifier = Modifier.padding(
+                                                    8.dp, 8.dp, 8.dp, 0.dp
+                                                ),
+                                                style = MaterialTheme.typography.body1,
+                                                fontWeight = FontWeight.Bold,
+                                                letterSpacing = 2.sp
+                                            )
+
+                                            Text(
+                                                text = it.parentPhoneNumber,
+                                                modifier = Modifier.padding(all = 8.dp),
+                                                letterSpacing = 4.sp,
+                                                style = MaterialTheme.typography.caption,
+                                            )
+                                        }
+
+                                    }
+                                }
+
+                                /*val rand = Math.random().toFloat()
 
                                 val values = listOf(
                                     rand, 1 - rand
@@ -745,7 +815,7 @@ class DashboardScreen() : Screen {
                                         DefaultSlice(colors[it])
                                     },
                                     forceCenteredPie = true
-                                )
+                                )*/
 
                                 Spacer(Modifier.weight(1f))
                             }

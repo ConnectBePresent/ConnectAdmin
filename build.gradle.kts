@@ -1,8 +1,8 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
-    kotlin("jvm") version "1.9.23"
-    id("org.jetbrains.compose") version "1.6.1"
+    kotlin("jvm") version "1.9.22"
+    id("org.jetbrains.compose") version "1.6.0"
     id("com.google.gms.google-services") version "4.4.1" apply false
 }
 
@@ -21,6 +21,7 @@ dependencies {
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
+    implementation(compose.material3)
 
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-scalars:2.11.0")
@@ -35,6 +36,8 @@ dependencies {
     implementation("com.darkrockstudios:mpfilepicker:3.1.0")
 
     implementation("io.github.koalaplot:koalaplot-core:0.5.2")
+
+    implementation("com.mohamedrejeb.calf:calf-ui:0.4.0")
 }
 
 compose.desktop {

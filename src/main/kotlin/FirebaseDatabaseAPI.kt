@@ -27,4 +27,10 @@ interface FirebaseDatabaseAPI {
         @Path(value = "instituteID") instituteID: String,
         @Body classList: List<Class>
     )
+
+    @GET("/attendance/{email}/{date}.json/")
+    suspend fun getAttendance(
+        @Path(value = "email") email : String,
+        @Path(value = "date") date : String,
+    ): Response<List<Student>>
 }

@@ -10,7 +10,7 @@ object Constants {
     const val KEY_CLASS_LIST: String = "class_list"
 
     const val DASH_CLASS_LIST: String = "dash_class_list_screen";
-    const val DASH_CLASS_ANALYSIS: String = "dash_class_analysis_screen";
+    const val DASH_ATTENDANCE_HISTORY: String = "dash_class_attendance_history";
 
 
     const val DB_BASE_URL = "https://connect-7bdb2-default-rtdb.firebaseio.com/"
