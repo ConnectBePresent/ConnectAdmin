@@ -3,7 +3,6 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import cafe.adriel.voyager.navigator.Navigator
 import com.google.gson.GsonBuilder
-import com.russhwolf.settings.Settings
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -41,12 +40,5 @@ fun App() {
 
 //    GlobalScope.launch { }
 
-    val settings = Settings()
-
-    if (settings.getString(Constants.KEY_INSTITUTE_ID, "null") != "null") {
-        if (settings.getString(Constants.KEY_CLASS_LIST, "null") != "null")
-            Navigator(DashboardScreen())
-        else
-            Navigator(ClassConfigScreen())
-    } else Navigator(LoginScreen())
+    Navigator(HomeScreen())
 }

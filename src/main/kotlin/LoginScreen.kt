@@ -53,45 +53,35 @@ import java.util.Locale
 
 private val poppinsFont = FontFamily(Font(resource = "poppins.ttf"))
 
-private lateinit var isSuccess: MutableState<Boolean>
 private lateinit var isLogin: MutableState<Boolean>
 
-class LoginScreen() : Screen {
+class LoginScreen(val navigator: Navigator) : Screen {
 
     @Composable
     override fun Content() {
 
         isLogin = remember { mutableStateOf(true) }
 
-        isSuccess = remember { mutableStateOf(false) }
+        MaterialTheme {
+            Column {
+                Text(
+                    modifier = Modifier.padding(16.dp),
+                    text = "Connect - Be Present",
+                    fontFamily = poppinsFont,
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Medium
+                )
 
-        if (isSuccess.value) {
-            if (Settings().getString(Constants.KEY_CLASS_LIST, "null") != "null") Navigator(
-                DashboardScreen()
-            )
-            else Navigator(ClassConfigScreen())
-        } else {
-            MaterialTheme {
-                Column {
-                    Text(
-                        modifier = Modifier.padding(16.dp),
-                        text = "Connect - Be Present",
-                        fontFamily = poppinsFont,
-                        fontSize = 36.sp,
-                        fontWeight = FontWeight.Medium
+                Row {
+                    Image(
+                        modifier = Modifier.fillMaxWidth(0.5f).fillMaxHeight(),
+                        contentScale = ContentScale.FillWidth,
+                        painter = painterResource("undraw_two_factor_auth.png"),
+                        contentDescription = "illustration"
                     )
 
-                    Row {
-                        Image(
-                            modifier = Modifier.fillMaxWidth(0.5f).fillMaxHeight(),
-                            contentScale = ContentScale.FillWidth,
-                            painter = painterResource("undraw_two_factor_auth.png"),
-                            contentDescription = "illustration"
-                        )
-
-                        if (isLogin.value) Login()
-                        else SignUp()
-                    }
+                    if (isLogin.value) Login()
+                    else SignUp()
                 }
             }
         }
@@ -170,8 +160,9 @@ class LoginScreen() : Screen {
 
             var buttonText by remember { mutableStateOf("Register") }
 
-            TextButton(modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
-                .padding(16.dp, 16.dp, 16.dp, 0.dp),
+            TextButton(
+                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
+                    .padding(16.dp, 16.dp, 16.dp, 0.dp),
                 onClick = {
 
                     GlobalScope.launch {
@@ -318,8 +309,9 @@ class LoginScreen() : Screen {
 
             var buttonText by remember { mutableStateOf("Login") }
 
-            TextButton(modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
-                .padding(16.dp, 16.dp, 16.dp, 0.dp),
+            TextButton(
+                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.5f)
+                    .padding(16.dp, 16.dp, 16.dp, 0.dp),
                 onClick = {
 
                     GlobalScope.launch {
@@ -355,7 +347,10 @@ class LoginScreen() : Screen {
                                 Gson().toJson(institutionResponse.body()?.classList)
                             )
 
-                            isSuccess.value = true
+                            if (Settings().getString(Constants.KEY_CLASS_LIST, "null") != "null")
+                                navigator.push(DashboardScreen(navigator))
+                            else navigator.push(ClassConfigScreen(navigator))
+
                         } else {
                             buttonText = "Something went wrong, try again!"
                             delay(1000)

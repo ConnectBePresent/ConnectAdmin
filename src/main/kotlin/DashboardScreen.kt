@@ -1,7 +1,6 @@
 @file:OptIn(DelicateCoroutinesApi::class)
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -52,6 +51,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.Navigator
 import com.darkrockstudios.libraries.mpfilepicker.FilePicker
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.google.gson.Gson
@@ -75,10 +75,9 @@ import kotlin.system.exitProcess
 
 private val poppinsFont = FontFamily(Font(resource = "poppins.ttf"))
 
-class DashboardScreen() : Screen {
+class DashboardScreen(val navigator: Navigator) : Screen {
     @OptIn(
         ExperimentalKoalaPlotApi::class,
-        ExperimentalFoundationApi::class,
         ExperimentalMaterial3Api::class
     )
     @Composable
