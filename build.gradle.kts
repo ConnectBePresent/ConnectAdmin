@@ -22,6 +22,7 @@ dependencies {
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
     implementation(compose.material3)
+//    implementation("org.jetbrains.compose.material3:material3-desktop:1.6.2")
 
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-scalars:2.11.0")

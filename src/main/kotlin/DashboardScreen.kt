@@ -59,13 +59,18 @@ import com.google.gson.reflect.TypeToken
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
 import com.mohamedrejeb.calf.ui.datepicker.rememberAdaptiveDatePickerState
 import com.russhwolf.settings.Settings
+import io.github.koalaplot.core.pie.BezierLabelConnector
+import io.github.koalaplot.core.pie.DefaultSlice
+import io.github.koalaplot.core.pie.PieChart
 import io.github.koalaplot.core.util.ExperimentalKoalaPlotApi
+import io.github.koalaplot.core.util.generateHueColorPalette
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.Serial
+import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 
 private val poppinsFont = FontFamily(Font(resource = "poppins.ttf"))
@@ -792,32 +797,41 @@ class DashboardScreen() : Screen {
                                     }
                                 }
 
-                                /*val rand = Math.random().toFloat()
+                                if (absenteeList.isNotEmpty()) {
 
-                                val values = listOf(
-                                    rand, 1 - rand
-                                )
+                                    Spacer(Modifier.weight(1f))
 
-                                PieChart(
-                                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                                    values = values,
-                                    label = {
-                                        if (it == 0) Text("Absent ${(values.get(it) * 100).roundToInt()}%")
-                                        else Text("Present ${(values.get(it) * 100).roundToInt()}%")
-                                    },
-                                    labelConnector = @Composable {
-                                        BezierLabelConnector()
-                                    },
-                                    slice = @Composable {
-                                        val colors =
-                                            remember(values.size) { generateHueColorPalette(values.size) }
+                                    val absenteeRatio =
+                                        absenteeList.size.toFloat() / currentStudentList.size.toFloat()
 
-                                        DefaultSlice(colors[it])
-                                    },
-                                    forceCenteredPie = true
-                                )*/
+                                    val values = listOf(
+                                        absenteeRatio, 1 - absenteeRatio
+                                    )
 
-                                Spacer(Modifier.weight(1f))
+                                    PieChart(
+                                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                                        values = values,
+                                        label = {
+                                            if (it == 0) Text("Absent ${(values.get(it) * 100).roundToInt()}%")
+                                            else Text("Present ${(values.get(it) * 100).roundToInt()}%")
+                                        },
+                                        labelConnector = @Composable {
+                                            BezierLabelConnector()
+                                        },
+                                        slice = @Composable {
+                                            val colors = remember(values.size) {
+                                                generateHueColorPalette(
+                                                    values.size
+                                                )
+                                            }
+
+                                            DefaultSlice(colors[it])
+                                        },
+                                        forceCenteredPie = true
+                                    )
+
+                                    Spacer(Modifier.weight(1f))
+                                }
                             }
                         }
                     }
