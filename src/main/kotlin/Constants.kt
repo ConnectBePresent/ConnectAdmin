@@ -1,8 +1,11 @@
 import androidx.compose.ui.graphics.Color
+import okhttp3.logging.HttpLoggingInterceptor
 
 object Constants {
 
     val SURFACE_COLOR = Color(0x706750A4)
+
+    val LOGLEVEL: HttpLoggingInterceptor.Level = HttpLoggingInterceptor.Level.BASIC
 
     const val AUTH_BASE_URL = "https://identitytoolkit.googleapis.com/"
 
