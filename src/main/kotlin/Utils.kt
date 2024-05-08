@@ -23,6 +23,21 @@ class Utils {
                 .format(Calendar.getInstance().time)
         }
 
+        fun getLastWeek(): ArrayList<String> {
+
+            val list = ArrayList<String>()
+
+            val calendar = Calendar.getInstance()
+            val simpleDateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+
+            for (i in 0..6) {
+                list.add(simpleDateFormat.format(calendar.time))
+                calendar.add(Calendar.DAY_OF_YEAR, -1)
+            }
+
+            return list
+        }
+
         @OptIn(DelicateCoroutinesApi::class)
         fun generatePDF() {
             GlobalScope.launch { PDFUtils.generate() }

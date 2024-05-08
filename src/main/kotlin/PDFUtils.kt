@@ -93,42 +93,43 @@ object PDFUtils {
 
                     document.add(studentList)
 
-                    val response = firebaseDatabaseAPI.getAttendance(
-                        standard.teacherEmail.lowercase().replace(".com", ""),
-                        //                        "01-05-2024"
-                        Utils.getToday()
-                    )
+                    Utils.getLastWeek().forEach { date ->
 
-                    var absenteeList: Paragraph = Paragraph(
-                        Chunk(
-                            "\n\tToday's Absentees", FontFactory.getFont(FontFactory.COURIER, 18f)
+                        val response = firebaseDatabaseAPI.getAttendance(
+                            standard.teacherEmail.lowercase().replace(".com", ""),
+                            date
                         )
-                    )
 
-                    if (response.isSuccessful && response.body() != null) {
-
-                        response.body()!!.toMutableList().sortedBy { it.rollNumber }
-                            .forEach { student ->
-                                absenteeList.add(
-                                    Chunk(
-                                        "\n\t\t\t${student.rollNumber}: ${student.name} (${student.parentPhoneNumber})",
-                                        FontFactory.getFont(FontFactory.COURIER, 14f)
-                                    )
-                                )
-                            }
-                    } else {
-                        absenteeList.add(
+                        var absenteeList: Paragraph = Paragraph(
                             Chunk(
-                                "\n\t\t\tAttendance not updated for the day!",
-                                FontFactory.getFont(FontFactory.COURIER, 14f)
+                                "\n\tAbsentees for $date",
+                                FontFactory.getFont(FontFactory.COURIER, 18f)
                             )
                         )
+
+                        if (response.isSuccessful && response.body() != null) {
+
+                            response.body()!!.toMutableList().sortedBy { it.rollNumber }
+                                .forEach { student ->
+                                    absenteeList.add(
+                                        Chunk(
+                                            "\n\t\t\t${student.rollNumber}: ${student.name} (${student.parentPhoneNumber})",
+                                            FontFactory.getFont(FontFactory.COURIER, 14f)
+                                        )
+                                    )
+                                }
+                        } else {
+                            absenteeList.add(
+                                Chunk(
+                                    "\n\t\t\tAttendance not updated for the day!",
+                                    FontFactory.getFont(FontFactory.COURIER, 14f)
+                                )
+                            )
+                        }
+
+                        document.add(absenteeList)
                     }
-
-                    document.add(absenteeList)
-
                 }
-
             }
         } catch (de: DocumentException) {
             System.err.println(de.message)
