@@ -26,7 +26,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
-import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,6 +46,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.platform.Font
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,8 +77,7 @@ private val poppinsFont = FontFamily(Font(resource = "poppins.ttf"))
 
 class DashboardScreen(val navigator: Navigator) : Screen {
     @OptIn(
-        ExperimentalKoalaPlotApi::class,
-        ExperimentalMaterial3Api::class
+        ExperimentalKoalaPlotApi::class, ExperimentalMaterial3Api::class
     )
     @Composable
     override fun Content() {
@@ -117,6 +116,8 @@ class DashboardScreen(val navigator: Navigator) : Screen {
                 ) {
 
                     var currentScreen by remember { mutableStateOf(Constants.DASH_CLASS_LIST) }
+
+                    var datePickerVisible by remember { mutableStateOf(true) }
 
                     val typeToken = object : TypeToken<ArrayList<Class>>() {}
                     val classList: ArrayList<Class> = Gson().fromJson(
@@ -445,6 +446,7 @@ class DashboardScreen(val navigator: Navigator) : Screen {
                                     contentPadding = PaddingValues(12.dp),
                                     onClick = {
                                         currentScreen = Constants.DASH_ATTENDANCE_HISTORY
+                                        datePickerVisible = true;
                                     },
                                     content = {
                                         Text(
@@ -728,22 +730,35 @@ class DashboardScreen(val navigator: Navigator) : Screen {
 
                             } else {
 
-                                val state = rememberAdaptiveDatePickerState()
+                                var text by remember {
+                                    mutableStateOf(buildAnnotatedString { append("Pick a Date") })
+                                }
+                                var date by remember { mutableStateOf("") }
 
-                                AdaptiveDatePicker(
-                                    state = state,
+                                Text(
+                                    text,
+                                    modifier = Modifier.padding(16.dp)
+                                        .clickable { datePickerVisible = true },
+                                    style = MaterialTheme.typography.h6,
+                                    fontWeight = FontWeight.Bold,
                                 )
 
-                                var text by remember { mutableStateOf("Pick a date") }
-                                var date by remember { mutableStateOf("") }
+                                val state = rememberAdaptiveDatePickerState()
+
+                                if (datePickerVisible) AdaptiveDatePicker(state = state)
 
                                 val absenteeList = remember { mutableStateListOf<Student>() }
 
                                 LaunchedEffect(state.selectedDateMillis) {
 
-                                    if (state.selectedDateMillis == null) return@LaunchedEffect
+                                    if (state.selectedDateMillis == null) {
+                                        text = buildAnnotatedString { append("Pick a Date") }
+                                        return@LaunchedEffect
+                                    }
 
-                                    state.displayMode = DisplayMode.Input
+                                    text = buildAnnotatedString { append("Loading...") }
+
+                                    datePickerVisible = false;
 
                                     date = Utils.getDate(state.selectedDateMillis!!)
 
@@ -753,20 +768,36 @@ class DashboardScreen(val navigator: Navigator) : Screen {
                                     )
 
                                     if (response.isSuccessful && response.body() != null) {
-                                        text = "Absentees of $date"
+                                        text = buildAnnotatedString {
+                                            append("Absentees of $date (")
+                                            withStyle(
+                                                SpanStyle(
+                                                    textDecoration = TextDecoration.Underline,
+                                                    color = Color.Blue
+                                                )
+                                            ) {
+                                                append("check again")
+                                            }
+                                            append(")")
+                                        }
+
                                         absenteeList.clear()
                                         absenteeList.addAll(response.body()!!.toMutableList())
                                     } else {
-                                        text = "Absentee data not found."
+                                        text = buildAnnotatedString {
+                                            append("Absentee data not found. (")
+                                            withStyle(
+                                                SpanStyle(
+                                                    textDecoration = TextDecoration.Underline,
+                                                    color = Color.Blue
+                                                )
+                                            ) {
+                                                append("check again")
+                                            }
+                                            append(")")
+                                        }
                                     }
                                 }
-
-                                Text(
-                                    text,
-                                    modifier = Modifier.padding(16.dp),
-                                    style = MaterialTheme.typography.body1,
-                                    fontWeight = FontWeight.Bold
-                                )
 
                                 LazyColumn {
                                     items(absenteeList.sortedBy { it.rollNumber }) {
