@@ -76,9 +76,7 @@ import kotlin.system.exitProcess
 private val poppinsFont = FontFamily(Font(resource = "poppins.ttf"))
 
 class DashboardScreen(val navigator: Navigator) : Screen {
-    @OptIn(
-        ExperimentalKoalaPlotApi::class, ExperimentalMaterial3Api::class
-    )
+    @OptIn(ExperimentalKoalaPlotApi::class, ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
 
@@ -97,6 +95,29 @@ class DashboardScreen(val navigator: Navigator) : Screen {
                     )
 
                     Spacer(Modifier.weight(1f))
+
+                    TextButton(
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .padding(16.dp),
+                        border = BorderStroke(1.dp, Color(0xFF292D32)),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF292D32)
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(12.dp),
+                        onClick = {
+                            Utils.generatePDF()
+                        },
+                        content = {
+                            Text(
+                                text = "Generate PDF Report",
+                                fontFamily = poppinsFont,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        },
+                    )
 
                     Icon(
                         modifier = Modifier.padding(12.dp).size(48.dp).clip(CircleShape)

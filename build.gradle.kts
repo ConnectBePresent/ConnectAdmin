@@ -39,6 +39,8 @@ dependencies {
     implementation("io.github.koalaplot:koalaplot-core:0.5.2")
 
     implementation("com.mohamedrejeb.calf:calf-ui:0.4.0")
+
+    implementation("com.github.librepdf:openpdf:2.0.2")
 }
 
 compose.desktop {
